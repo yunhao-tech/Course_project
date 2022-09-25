@@ -61,3 +61,6 @@ List:
          * Algorithme d'Uzawa
          * Méthode de pénalisation
          * Algorithme du Lagrangien augmenté
+
+* IPP Practical Machine learning
+    * Session 1: analyse on several unsupervised machine learning methods: K-means, GMM, PCA, t-SNE.

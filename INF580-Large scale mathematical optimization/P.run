@@ -1,0 +1,13 @@
+
+model P.mod;
+data random.dat;
+option solver cplex;
+solve;
+#display x;
+
+printf "x\n" > SolutionP.csv;
+for {i in N} {
+	printf "%d, %g\n",i,x[i] >> SolutionP.csv;
+}
+
+#display constraintP;

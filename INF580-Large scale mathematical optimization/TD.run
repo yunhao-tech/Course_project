@@ -1,0 +1,52 @@
+
+model TD.mod;
+data random.dat;
+
+option solver cplex;
+option cplex_options 'pooldual = 1';
+solve;
+
+#display u;
+
+printf "u\n" > SolutionTD.csv;
+for {i in K} {
+	printf "%d, %g\n",i,u[i] >> SolutionTD.csv;
+}
+
+#display u;
+
+
+#display u;
+
+#printf "#solutions obtained by solving Dual Problem\n" > TD.dat;
+
+#printf "param k := %d;\n",k >> TD.dat;
+#printf "param n := %d;\n",n >> TD.dat;
+
+#printf "param c := \n" >> TD.dat;
+#for {i in N} {
+#	printf "	%d %g\n",i,c[i] >> TD.dat;
+#}
+#printf ";" >> TD.dat;
+
+#printf "param u := \n" >> TD.dat;
+#for {i in K} {
+#	printf "	%d %g\n",i,u[i] >> TD.dat;
+#}
+#printf ";" >> TD.dat;
+
+#printf "param TA := \n" >> TD.dat;
+#for {i in K}{
+#	for {j in N}{
+#		printf "	%d %d %g\n",i,j,TA[i,j] >>TD.dat;
+#	}
+#}
+#printf ";" >> TD.dat;
+
+#printf "param TB := \n" >> TD.dat;
+#for {i in K}{
+#	printf "	%d %g\n",i,TB[i] >>TD.dat;
+#}
+#printf ";" >> TD.dat;
+
+#display object;

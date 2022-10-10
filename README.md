@@ -3,7 +3,7 @@ Courses homeworks and projects
 
 | Course       | Homeworks & Projects | Content | 
 | :--:         | :--:                 | :--:    | 
-| IPP Practical Machine learning | [Session 1](INF580-Large scale mathematical optimization/INF580.pdf)  | analyse on several unsupervised machine learning methods: **K-means, GMM, PCA, t-SNE** | 
+| IPP Practical Machine learning | [Session 1](src/INF580-Large scale mathematical optimization/INF580.pdf)  | analyse on several unsupervised machine learning methods: **K-means, GMM, PCA, t-SNE** | 
 | IPP Deep learning | Lab 1  | implement MLP from scratch |
 |                   | Lab 2  | implement MLP using pytorch |
 |                   | Lab 3  | RNN (Many-to-one) |

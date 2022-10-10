@@ -1,3 +1,5 @@
 Python/
 .DS_Store
 **/*.ipynb_checkpoints/
+.RData
+.Rhistory

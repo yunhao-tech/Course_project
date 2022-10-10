@@ -1,0 +1,174 @@
+---
+title: 'Linear Mixed Models'
+subtitle: 'Exercices'
+---
+
+## Preliminary {.unnumbered}
+
+Functions from `R`-base and stats (preloaded) are required plus packages from the **tidyverse** for data representation and manipulation. We also need the **lme4** package which is the standard for fitting mixed-model. **lattice** is used for graphical representation of quantities such as random and fixed effects in the mixed models.
+
+```{r tests-config, message = FALSE}
+#| code-fold: false
+library(tidyverse)
+library(lme4)
+library(lattice)
+theme_set(theme_bw())
+```
+
+
+## The `Orange` data
+
+The `Orange` data is a classical data set provided with the **datasets** package included with `R`. It consists in a 35-row data frame with  records of the growth of 3 orange trees, giving their circumference against their age: 
+
+
+```{r orange-data-loading}
+data(Orange)
+## we force the sorting of the levels (1,2,3)
+Orange$Tree <- factor(Orange$Tree, levels = unique(Orange$Tree))
+Orange %>% as_tibble() %>% rmarkdown::paged_table()
+```
+
+```{r, fig.height=6, fig.width=8}
+#| code-fold: true
+pl <- 
+  Orange %>% 
+    ggplot() + aes(x = age, y = circumference, color = Tree) + 
+  geom_point() + geom_line() 
+pl
+```
+
+1. Fit different linear (fixed effect) models to this data and compare them
+```{r}
+lm1 <- lm(circumference~age+0, data=Orange) 
+pl + geom_line(aes(x = age, y = predict(lm1))) + facet_wrap(~Tree) + theme_bw()
+```
+```{r}
+lm2 <- lm(circumference~age, data=Orange) 
+pl + geom_line(aes(x = age, y = predict(lm2))) + facet_wrap(~Tree) + theme_bw()
+```
+```{r}
+# compare these two models 
+anova(lm1, lm2)
+BIC(lm1, lm2)
+AIC(lm1, lm2)
+# it seems that lm1 is better 
+```
+
+2. Fit different linear mixed effect models to this data and compare them (with/without random effect for the slope/intercept)
+```{r}
+# random effect only on intercept
+lmem1 <- lmer(circumference ~ age + (1|Tree), data = Orange) 
+# random effect only on slope
+lmem2 <- lmer(circumference ~ age + (age + 0|Tree), data = Orange)
+# random effect on intercept and slope
+lmem3 <- lmer(circumference ~ 1+age + (1+age|Tree), data = Orange)
+```
+```{r}
+BIC(lmem1, lmem2, lmem3, lm1, lm2)
+# it seems that lmem2 (random effect only on slope) is the best.
+# lmem2 and lmem3 do the similar prediction. BIC choose the one with less parameters. 
+
+# Attention to the df! 
+# lm1: sigma(variance of noise), intercept
+# lm2: sigma(variance of noise), intercept, slope of age
+# lmem1: sigma(variance of noise), intercept, slope of age, variance of random effects on Tree for intercept 
+# lmem3: sigma(variance of noise), intercept, slope of age, 
+        # variance of random effects on Tree for slope of age, 
+        # variance of random effects on intercept,
+        # covariance of these two above
+```
+
+```{r}
+pl + geom_line(aes(x = age, y = predict(lmem2))) + facet_wrap(~Tree) + theme_bw()
+```
+
+3. Compute confidence intervals on the parameters, compute the individual parameters and plot the random effects for the *best* model
+```{r}
+confint(lmem2)
+```
+
+4. Compare the ML and the REML estimates for this model
+```{r}
+
+```
+
+## The `Pastes` data
+
+The `Pastes` data is a another classical data set provided with the **lme4** package. It describes the 
+strength of a chemical paste product whose quality depends on the delivery batch, and the cask within the delivery. There are 60 observations, 10 levels of batch and 3 levels of cask.
+
+```{r pastes data loading}
+data(Pastes)
+Pastes %>% as_tibble() %>% rmarkdown::paged_table()
+```
+We can have a quick look on summary statistics in each level of each factor:
+
+```{r tidy alternative cross}
+Pastes %>% 
+  group_by(batch, cask) %>% 
+  summarise(mean_strengh = mean(strength), sd_strength = sd(strength), n_replicat = n()) %>% 
+  rmarkdown::paged_table()
+```
+
+There is obviously some structure in the data set and an effect of the batch level:
+
+```{r Paste plot}
+#| code-fold: true
+Pastes %>% 
+  ggplot() + aes(x = fct_reorder(batch, strength, median), y = strength) + geom_boxplot() + geom_jitter()
+```
+
+We can plot the cask as the function of the strength, conditionning on batch (and )
+the later being reorder by strength)
+
+```{r Pastes plot 2}
+#| code-fold: true
+lattice::dotplot(cask ~ strength | reorder(batch, strength), Pastes,
+        strip = FALSE, strip.left = TRUE, layout = c(1, 10),
+        ylab = "Cask within batch",
+        xlab = "Paste strength", jitter.y = TRUE)
+```
+
+1. Build simple linear models for this data (with batches, then with casks effects)
+```{r}
+lm0 <- lm(strength~1, data = Pastes)
+lm1 <- lm(strength~batch + 0, data = Pastes)
+lm2 <- lm(strength~batch + batch:cask + 0, data = Pastes)
+```
+
+```{r}
+BIC(lm0, lm1, lm2)
+```
+
+2. Build mixed models for this data (with random effects on batches, then casks effects)
+```{r}
+lmem1 <- lmer(strength ~ 1 + (1|batch), data = Pastes) 
+lmem2 <- lmer(strength ~ 1 + (1|batch:cask), data = Pastes) 
+```
+
+3. What is the main cause of the variability of the paste strength?
+
+## The `Oats` data
+
+These data have been introduced by Yates (1935) as an example of a split-plot design. The objective is to assess the effect of treatment (level of nitrogen) on the yield of different varieties of oat.
+
+The treatment structure used in the experiment was a 3 x 4 full factorial, with three varieties of oats and four concentrations of nitrogen. The experimental units were arranged into six blocks, each with three whole-plots subdivided into four subplots. The varieties of oats were assigned randomly to the whole-plots and the concentrations of nitrogen to the subplots. All four concentrations of nitrogen were used on each whole-plot.
+
+The data are available from the **nlme** package:
+
+```{r, message=FALSE, warning=FALSE}
+data(Oats, package = "nlme")
+# keep the original order of the levels of Block and Variety
+Oats$Block   <- factor(Oats$Block  , levels = unique(Oats$Block))  
+Oats$Variety <- factor(Oats$Variety, levels = unique(Oats$Variety))
+Oats %>% as_tibble() %>% rmarkdown::paged_table()
+```
+The `xtabs` function creates a contingency table using the handy formula notation which allows us to check that the data indeed follows a full factorial design:
+
+```{r}
+xtabs(~ Block + Variety, Oats)
+```
+
+1. Plot the data in such a way as to visualize the effect of the fertilizer-concentration on the yield as well as possible differences between blocks and varieties.
+
+2. Fit the Oats data with linear mixed effects model, assuming a linear effect of the fertilizer concentration on the yield.

@@ -1,0 +1,213 @@
+---
+title: " Graph Clustering: Stochastic Blockmodels"
+subtitle: "An illustration on antogonistic tree/fungus network"
+---
+
+##  Introduction
+
+This tutorial introduces the model-based approaches, namely, stochastic blockmodels (binary, weighted, bipartite, w/o covariates)
+
+These methods will be illustrated for the analysis of an (ecological) network data set.
+
+###  Requirements
+
+The packages required for the analysis are `sbm` and `igraph`, plus some others for data manipulation and representation. 
+
+```{r packages, message=FALSE, warning=FALSE}
+library(igraph)    # graph manipulation
+library(sbm)       # stochastic bloc model
+library(missSBM)
+library(tidyverse) # data manipulation
+library(aricode)   # clustering measures comparison
+library(corrplot)  # plot of covariance/correlation matrices
+```
+
+::: {.callout-info}
+## Advice
+
+*Use the documentation of the aforementioned packages!!*, and the vignettes available at [https://grosssbm.github.io/sbm/](https://grosssbm.github.io/sbm/)
+
+:::
+
+### Data set: antagonistic tree/fungus interaction network
+
+![Fungus on tree](Tree-Fungus.jpg){width=150px} 
+
+We consider the fungus-tree interaction network studied by @tree_fungus_network, available with the package **sbm**:
+
+```{r import dataset}
+data("fungusTreeNetwork")
+str(fungusTreeNetwork,  max.level = 1)
+```
+
+This data set provides information about $154$ fungi sampled on $51$ tree species. It is a list with the following entries:
+
+- `tree_names` : list of the tree species names
+- `fungus_names`: list of the fungus species names
+- `tree_tree` : weighted tree-tree interactions (number of common fungal species two tree species host)
+- `fungus_tree` : binary fungus-tree interactions
+- `covar_tree` : covariates associated to pairs of trees (namely genetic, taxonomic and geographic distances)
+
+During this tutorial we are going to explore successive variants of the Stochastic Blockmodels to analyse binary, weighted, then bipartite network, also by introducing external information via covariates.
+
+## Analysis of the tree/tree data
+
+The tree-tree interactions result into a simple network.
+
+### Tree-tree binary interaction networks
+
+We first consider the binary network where an edge is drawn between two trees when they do share a least one common fungi. Eventually, we will assume that our matrix is the realization of the SBM: 
+
+$$
+\begin{aligned}
+ (Z_i) \text{ i.i.d.} \qquad & Z_i \sim \mathcal{M}(1, \alpha) \\
+ (Y_{ij}) \text{ indep.} \mid (Z_i) \qquad & (Y_{ij} \mid Z_i=k, Z_j = \ell) \sim \mathcal{B}(\pi_{k\ell})
+\end{aligned}
+$$
+
+**Questions**
+
+1. Extract the binary tree-tree adjacency matrix and plot it (`plotMyMatrix`). Remove isolated nodes
+```{r}
+# binary matrix. 0 or 1
+binary_tree_tree <- (fungusTreeNetwork$tree_tree!=0) * 1
+isolated <- colSums(binary_tree_tree) == 0
+binary_tree_tree <- binary_tree_tree[!isolated, !isolated]
+
+plotMyMatrix(binary_tree_tree, dimLabels=list(row= 'Tree',col = 'Tree'))
+```
+
+2. Construct and build an igraph object to plot the network 
+```{r}
+tree_tree_graph <- graph_from_adjacency_matrix(binary_tree_tree, mode='undirected')
+plot(tree_tree_graph)
+```
+
+3. Adjust a simple binary SBM with `estimateSimpleSBM`. Become familiar with object `simpleSBM`.
+```{r}
+MysimpleSBM <- estimateSimpleSBM(binary_tree_tree)
+# axe x: number of classes; ICL: to maximize
+# les points rouges sont les meilleurs pour chaque nombre de classe.
+# les points noirs : les essaies (les optimum locaux)
+```
+
+```{r}
+plot(MysimpleSBM)
+plot(MysimpleSBM, type='meso') # represente each cluster by one node
+coef(MysimpleSBM) # extract the parameter pi{i}{j}, for i, j in {1, ..., #clusters}
+```
+
+4. Select a model via ICL. Explore/check models with similar ICL (using `$setModel()`, `$storedModel`)
+```{r}
+#ICL : Integrated Classification Likelihood
+MysimpleModels <- MysimpleSBM$storedModels # the best model corresponding to each number of cluster
+idx <- which.max(MysimpleModels$ICL)
+
+MysimpleSBM$setModel(MysimpleModels$indexModel[idx])
+
+```
+### Weighted interaction network with Poisson model
+
+Instead of considering the binary network tree-tree we may consider the weighted network where the link between two trees is the number of fungi they share.
+
+$$
+\begin{aligned}
+ (Z_i) \text{ i.i.d.} \qquad & Z_i \sim \mathcal{M}(1, \pi) \\
+ (Y_{ij}) \text{ indep.} \mid (Z_i) \qquad & (Y_{ij} \mid Z_i=k, Z_j = \ell) \sim \mathcal{P}(\exp(\alpha_{kl})) = \mathcal{P}(\lambda_{kl})
+\end{aligned}
+$$
+
+1. Remove the isolates node from the weighted adjacency matrix
+```{R}
+tree_tree <- fungusTreeNetwork$tree_tree[!isolated, !isolated]
+plotMyMatrix(tree_tree)
+```
+
+2. Adjust a collection of Poisson SBM, explore the models.
+```{r}
+MyPoissonSBM <- estimateSimpleSBM(tree_tree, model='poisson')
+```
+
+3. Adjust the absolute spectral clustering and modularity-based hierarchical method
+```{r}
+ward.D2 <- hclust(dist(tree_tree), method='ward.D2')
+plot(ward.D2)
+binary_tree_tree_graph <- graph_from_adjacency_matrix(binary_tree_tree, mode='undirected')
+modularity <- cluster_fast_greedy(tree_tree_graph)
+
+absolute_spectral_clustering <- function(graph, nb_cluster) {
+  L <- laplacian_matrix(graph, normalized = TRUE)
+  AL <- diag(1, ncol(L), ncol(L)) - L
+  spec_AL <- eigen(AL)
+  selected <- order(abs(spec_AL$values), decreasing = TRUE)[1:nb_cluster]
+  U <- spec_AL$vectors[, selected, drop = FALSE]
+  if (nb_cluster > 1) U <- sweep(U, 1, sqrt(rowSums(U^2)), '/')
+  U[is.na(U)] <- 0
+  res <- kmeans(U, nb_cluster, nstart = 40)
+  res
+}
+
+tree_tree_graph <- graph_from_adjacency_matrix(tree_tree, mode='undirected', weighted=TRUE)
+spectral_cl <- absolute_spectral_clustering(tree_tree_graph, MyPoissonSBM$nbBlocks)
+plotAlluvial(list(poisson=MyPoissonSBM$memberships,
+                  spectral=spectral_cl))
+```
+4. Compare spectral, hierarchical clustering, binary SBM and Poisson SBM with ARI/NID (package `aricode`) and alluvial plots (`plotAlluvial`) (chose the number of block selected by the Poisson SBM).
+```{r}
+MysimpleSBM$memberships
+MyPoissonSBM$memberships
+aricode::ARI(MysimpleSBM$memberships, MyPoissonSBM$memberships)
+plotAlluvial(list(binary=MysimpleSBM$memberships, 
+                  poisson=MyPoissonSBM$memberships))
+```
+### Including covariate effects
+
+We have on each pair of trees 3 covariates, namely the genetic distance, the taxonomic
+distance and the geographic distance.
+
+Each covariate has to be introduced as a  matrix: $X^k_{ij}$ corresponds to the value of the $k$-th covariate describing the couple $(i,j)$.
+
+$$
+Z_i \sim^{\text{iid}} \mathcal{M}(1, \alpha) \\
+Y_{ij} \mid Z_i=k, Z_j = \ell \sim \mathcal{P}(\exp(\pi_{kl} + x_{ij}^\intercal \theta)) = \mathcal{P}(\gamma_{kl}\exp(x_{ij}^\top \theta))
+$$
+
+**Questions**
+
+1. Plot the data matrix of covariates. Remove the isolated nodes (in the graph).
+
+2. Use k-means or hierarchical clustering to cluster the covariates data, and compare with the previous graph clustering obtained with Poisson SBM.
+
+3. Adjust a Poisson SBM with covariates (1, 2, all of them). Use ICL to select the best model.
+```{r}
+gene_cov <- fungusTreeNetwork$covar_tree$genetic_dist[!isolated, !isolated]
+taxo_cov <- fungusTreeNetwork$covar_tree$taxonomic_dist[!isolated, !isolated]
+geog_cov <- fungusTreeNetwork$covar_tree$geographic_dist[!isolated, !isolated]
+
+MyPossionSBM_gene <- estimateSimpleSBM(tree_tree, model='poisson', covariates = list(gene =gene_cov),
+                                      estimOptions = list(verbosity=0, plot=FALSE))
+MyPossionSBM_taxo <- estimateSimpleSBM(tree_tree, model='poisson', covariates = list(taxo =taxo_cov),
+                                      estimOptions = list(verbosity=0, plot=FALSE))
+MyPossionSBM_geog <- estimateSimpleSBM(tree_tree, model='poisson', covariates = list(geog =geog_cov),
+                                      estimOptions = list(verbosity=0, plot=FALSE))
+
+
+MyPossionSBM_taxo_geog <- estimateSimpleSBM(tree_tree, model='poisson', covariates = list(geog=geog_cov,taxo=taxo_cov),
+                                      estimOptions = list(verbosity=0, plot=FALSE))
+MyPossionSBM_taxo_geog$ICL
+plot(MyPossionSBM_taxo_geog)
+```
+4. Check your final model. Does it make any biological sense? Compare the obtained clustering with ARI/NID and alluvial plots of your final model with the model without covariates. 
+
+## Analysis of the tree/fungi data with Bipartite SBM
+
+We now consider the tree-fungi interaction network.
+
+$$
+Z^R_i \sim^{\text{iid}} \mathcal{M}(1, \alpha^R) \\
+Z^C_i \sim^{\text{iid}} \mathcal{M}(1, \alpha^C) \\
+Y_{ij} \mid Z^R_i=k, Z^C_j = \ell \sim \mathcal{f}(\gamma_{k\ell}, x_{ij}^\top \theta)
+$$
+
+Redo the whole analysis, using this time a bipartite SBM.
+

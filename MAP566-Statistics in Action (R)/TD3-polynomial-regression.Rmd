@@ -1,0 +1,53 @@
+---
+title: "Polynomial regression model: exercices"
+---
+
+
+## Preliminary
+
+Only functions from `R`-base and stats (preloaded) are required plus packages from the **tidyverse** for data representation and manipulation. You could also try the package **broom** that standardizes the output of built-in R functions for statistical modelling
+
+
+```{r linear-regression-config, message = FALSE}
+library(tidyverse)
+library(ggfortify) # extend some ggplot2 features
+library(broom)
+theme_set(theme_bw())
+```
+
+## Introduction
+
+The file `ratWeight.csv` consists of rat weights measured over 14 weeks during a subchronic toxicity study related to the question of genetically modified (GM) corn. 
+
+We will only consider the weight of rat B38625. 
+
+```{r linear-regression-read, message = FALSE}
+rat_weight <- read_csv("ratWeight.csv") %>% filter(id == 'B38625')
+rat_weight %>% kableExtra::kbl() %>% kableExtra::kable_styling()
+```
+
+Based on this data, our objective is to build a regression model of the form
+
+$$y_j = f(x_j) + e_j \quad ; \quad 1 \leq j \leq n$$
+
+We will restrict ourselves to polynomial regression, by considering functions of the form 
+
+$$
+\begin{aligned}
+f(x) &= f(x ; c_0, c_1, c_2, \ldots, c_d) \\
+&= c_0 + c_1 x + c_2 x^2 + \ldots + c_d x^d
+\end{aligned}
+$$
+
+## Questions
+
+  1. Plot the data
+
+  2. Fit several polynomials (degree 0, 1, 2, 3, 6, ...) to this data using the `lm` function. 
+
+  3. Look at some diagnostic plots to eliminate miss-specified models.
+
+  4. Compare the predictive performance of the models that have been retained.
+
+  5. Use statistical tests and information criteria to compare the models and select *"the best one"*.
+

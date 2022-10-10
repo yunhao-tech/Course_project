@@ -1,0 +1,318 @@
+---
+title: "MAP566 - Homework assignment #2"
+subtitle: "Implementation of VEM and analysis of a contact tracing network"
+format:
+  html:
+    self-contained: true
+    theme: [cosmo, theme.scss]
+    toc: true
+    number-sections: true
+    html-math-method: katex
+    code-copy: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+---
+
+
+## Introduction {-}
+
+In the first part of the homework, we implement the Variational Expectation-Maximization (VEM) algorithm for the Stochastic Block Model (SBM) from scratch, apply it to a simulated network and compare the results with an existing R package for SBM fitting. In the second part, we analyze a real network of contact tracing data; we perform visualization and descriptive statistics, and discover an extension of the SBM, called the Degree-Corrected SBM, which accounts for heterogeneity in the distribution of nodes degrees.
+
+## Implementation of the VEM algorithm for the SBM
+
+Recall that, in the SBM model, nodes of the network are distributed across $K$ unknown communities, and that connection probabilities between nodes only depend on community memberships. The generative models is as follows, with $z_i$ denoting the indicator vector or node $i$'s community, and $A\in\{0,1\}^{n\times n}$ being the adjacency matrix of the network.
+
+$$z_i \sim \text{Multinom}(1,\pi_1,\ldots,\pi_K),$$
+$$\mathbb{P}(A_{ij}=1|z_{ik}=1,z_{il}=1) = P_{kl},$$
+where $\pi_1,\ldots,\pi_K \in (0,1)$ are communities proportions and $Q_{kl}\in (0,1)$ is the connection probability between nodes of community $k$ and nodes of community $l$. The goal is to estimate the parameters of the model, $\pi$ and $Q$ via Maximum Likelihood. At the same time we want to estimate, for all $i\in\{1,\ldots,n\}$ and for all $k\in\{1,\ldots,K\}$, the quantities $\mathbb{P}(z_{ik}|A)$, in order to infer the unknown communities memberships.
+
+The SBM is a latent variable model, and the natural algorithm to perform MLE is the Expectation-Maximization algorithm, which iterates two steps until convergence:
+
+* Initialize $\theta^0 = (\pi^0, P^0)$
+* For $t=1,\ldots$:
+    + Expectation(E)-step: compute the conditional expectation of the complete log-likelihood w.r.t current parameter estimate $\theta^t$
+    $$Q(\theta | \theta^t) = \mathbb{E}_{\theta^t}\left[ \log\mathbb{P}(A,z;\theta)|A \right]$$
+    + Maximization(M)-step: maximize the function $Q(\theta | \theta^t)$ w.r.t $\theta$: $\theta^{t+1} \in \operatorname{arg min}_{\theta}Q(\theta | \theta^t). $
+
+__(Q1)__ Write the log-likelihood of the complete data problem $\log\mathbb{P}(A,z;\pi, P)$.
+$$\log\mathbb{P}(A,z;\pi, P) = \sum_{i<j} \sum_{k,l} 1_{z_{i}=k} 1_{z_{j}=l}* (A_{ij} logP_{kl} + (1-A_{ij})log(1-P_{kl})) + \sum_{i,k} 1_{z_i=k}log(\pi_{k}) $$
+
+
+__(Q2)__ Write the formula for the conditional expectation $\mathbb{E}_{\theta^t}\left[ \log\mathbb{P}(A,z;\theta) | A\right]$. Do you think you can compute this quantity in practice if the network is of large size ? Why ?
+$$\mathbb{E}_{\theta^t}\left[ \log\mathbb{P}(A,z;\theta) | A\right]=\sum_{i<j,k,l}\mathbb{P}_{\theta^t}(z_i=k,z_j=l | A)*(A_{ij} logP_{kl} + (1-A_{ij})log(1-P_{kl})) + \sum_{i,k}\mathbb{P}(z_i=k|A)*log(\pi_k)$$
+We cannot compute this quantity in practice. We don't have the close form of $\mathbb{P}_{\theta^t}(z_i=k|A)$.
+
+
+
+To circumvent this intractable computation, the SBM model can be fitted using the Variational Expectation-Maximization (VEM) algorithm. VEM replaces the E-step by a so-called Variational Expectation step (VE-step), which approximates the conditional distribution $\mathbb{P}(z|A ; \theta)$ by a simple distribution $q(z)$, w.r.t. which the calculation of $\mathbb{E}_{z|A\sim q(z)}\left[ \log\mathbb{P}(A,z;\theta)|A \right]$ is tractable.
+
+More precisely, we use the mean-field approximation, which approximates $\mathbb{P}(z|A ; \theta)$ by a factorizable distribution:
+
+$$q(z) = \prod_{i=1}^n \prod_{k=1}^K\tau_{ik}^{z_{ik}}.$$
+In the distribution $q$, the parameters $\tau_{ik} \simeq \mathbb{P}(z_{ik}|A)$ are unknown, and are optimized so as to obtain the best approximation. In the rest, we will admit that the optimal parameters $\hat{\tau}_{ik}$ satisfy the following fixed-point equation:
+
+$$\hat{\tau}_{ik}(\theta) \propto \pi_k\prod_{j\neq i}\prod_{l=1}^K\left[A_{ij}\log P_{kl} + (1-A_{ij})\log(1-P_{kl}) \right]^{\tau_{jl}},$$
+with normalizing constant computed such that $\sum_{k=1}^K\hat{\tau}_{ik}(\theta) = 1$ for all $i\in\{1,\ldots,n\}$. Thus, the E-step is replaced by the VE-step:
+
+* Initialize $\theta^0 = (\pi^0, P^0)$
+* For $t=1,\ldots$:
+    + VE-step: compute the quantities $\hat{\tau}_{ik}(\theta^t)$, for $1\leq i\leq n $ and $1\leq k \leq K$.      + M-step: maximize the function $\hat Q(\theta | \theta^t)$ w.r.t $\theta$: $\theta^{t+1} \in \operatorname{arg min}_{\theta}\hat Q(\theta | \theta^t)$, where $\hat Q(\theta | \theta^t)$ is the approximated conditional expectation of the complete log-likelihood
+    $$\hat Q(\theta | \theta^t) = \mathbb{E}_{z_{ik}|A\sim \mathcal{B}(\hat{\tau}_{ik})}\left[ \log\mathbb{P}(A,z;\theta) |A\right]$$
+
+
+__(Q3)__ Using the fixed point equation satisfied by $\hat{\tau}$, propose a method to compute the quantities $\hat{\tau}_{ik}(\theta^t)$ at iteration $t\geq 1$ of the VEM algorithm.
+
+First, we initialize tau; Then, we calculate a new tau using the formula; After normalization by lines, we update tau. We iterate in this way, until the convergence (the distance between old tau and new tau is smaller than a threshold).
+
+
+__(Q4)__ Write a function which takes as arguments current values of $\pi^t, Q^t$ and outputs the optimal quantities $\hat{\tau}_{ik}$.
+
+*Hint 1*: For the sake of robustness, you can implement the fixed-point relation for $\hat{tau}$ in the log-scale.
+
+*Hint 2*: In the entire homework, to test your functions before applying them to the real data, you can use simulated SBM data from the **sbm** `R` package, as follows. 
+
+```{r}
+library(sbm)
+n <- 100 # fix a number of nodes (not too large)
+K <- 3 # fix a number of blocks
+pi <- c(0.1, 0.3, 0.6) # fix block proportions
+P <- matrix(c(0.8, 0.2, 0.1, 0.2, 0.8, 0.3, 0.1, 0.3, 0.8), nrow=3) # fix block connection probabilities
+simulated_sbm <- sampleSimpleSBM(n, pi, connectParam = list(mean = P)) # simulated an SBM
+simulated_A <- simulated_sbm$networkData # get the adjacency matrix A
+```
+
+
+```{r}
+norm_rows <- function(x){
+  c1 <- rowSums(x)
+  x / c1  
+}
+
+get_tau <- function(pi, P, A, eps=1e-4){
+  # initialize the tau
+  tau <- matrix(0, nrow=n, ncol=K)
+  tau_new <- matrix(runif(n*K), nrow=n, ncol=K)
+  while (max(tau_new - tau) > eps){
+    tau <- tau_new
+    for (i in 1:n){
+      for (k in 1:K){
+        term.2 <- 0
+        for (j in 1:n){
+          if (j != i){
+            for (l in 1:K){
+              term.2 <- term.2 + tau[j,l] * (A[i,j] * log(P[k,l]) + (1 - A[i,j]) * log(1 - P[k,l]) )
+            }  
+          }
+        }
+        tau_new[i,k] <- exp(log(pi[k]) + term.2) 
+      }
+    }
+    tau_new <- norm_rows(tau_new)
+  }
+  tau_new
+}
+
+```
+
+__(Q5)__ Write the formula for the approximated conditional expectation $\hat Q(\theta | \theta^t) = \mathbb{E}_{z_{ik}|A\sim \mathcal{B}(\hat{\tau}_{ik}(\theta^t))}\left[ \log\mathbb{P}(A,z;\theta) |A\right]$.
+
+$$\hat Q(\theta | \theta^t)= \sum_{i<j,k,l} \hat{\tau}_{ik}(\theta^t)*\hat{\tau}_{jl}(\theta^t) *(A_{ij} logP_{kl} + (1-A_{ij})log(1-P_{kl})) + \sum_{i,k}\hat{\tau}_{ik}(\theta^t)*log(\pi_k)$$
+
+```{r}
+compute_Q <- function(pi, P, A, tau){
+  Q <- 0
+  for (i in 1:n){
+    for (k in 1:K){
+      Q <- Q + tau[i,k]*log(pi[k])
+      if (i < n){
+        for (j in (i+1):n){
+          for (l in 1:K){
+            Q <- Q + tau[i,k]*tau[j,l]*(A[i,j] * log(P[k,l]) + (1 - A[i,j]) * log(1 - P[k,l]) )
+          }
+        }
+      }
+    }
+  }
+  return(Q)
+}
+
+```
+
+
+We admit the following formulas for the M-step, i.e. for the quantities $\pi^{t+1}$ and $P^{t+1}$ which satisfy
+$(\pi^{t+1},P^{t+1}) \in \operatorname{arg min}_{\pi, P}  \hat Q(\theta | \theta^t)$:
+
+$$\pi^{t+1}_k = \frac{1}{n}\sum_{i=1}^n\hat{\tau}_{ik}(\theta^t)\text{, for all }1\leq k\leq K;$$
+$$P^{t+1}_{kl} = \frac{\sum_{i\neq j} A_{ij}\hat{\tau}_{ik}(\theta^t)\hat{\tau}_{jl}(\theta^t)}{\sum_{i\neq j} \hat{\tau}_{ik}(\theta^t)\hat{\tau}_{jl}(\theta^t)}.$$
+
+__(Q6)__ Write a function which implements the M-step, i.e., which takes as argument the data $A$ and the current quantities $\hat{\tau}_{ik}(\theta^t)$ and outputs the updated values $\pi^{t+1}$ and $P^{t+1}$.
+```{r}
+updata_pi_P <- function(A, tau){
+  pi <- colMeans(tau)
+  P <- matrix(0, ncol = K, nrow = K)
+  numerator <- 0
+  demoninator <- 0
+  for (k in 1:K){
+    for (l in 1:K){
+      for (i in 1:n){
+        for (j in 1:n){
+          if (j != i){
+            numerator <- numerator + A[i,j]*tau[i,k]*tau[j,l]
+            demoninator <- demoninator + tau[i,k]*tau[j,l]
+          }
+        }
+      }
+      P[k,l] <- numerator / demoninator
+    }
+  }
+  list("pi"=pi, "P"=P)
+}
+
+```
+
+
+__(Q7)__ Combine your two functions for the VE-step and for the M-step into a final function which proceeds to the VEM iterative algorithm.
+```{r}
+VEM <- function(pi, P, A, eps=1e-4){
+  diff <- 1
+  num_iter <- 0
+  while (diff > eps){
+    tau <- get_tau(pi, P, A) # E-step
+    pi_P <- updata_pi_P(A, tau) # M-step
+    pi_new <- pi_P$pi
+    P_new <- pi_P$P
+    diff <- abs(compute_Q(pi, P, A, tau) - compute_Q(pi_new, P_new, A, tau))
+    pi <- pi_new
+    P <- P_new
+    num_iter <- num_iter + 1
+  }
+  print(paste("After", num_iter, "itertations, the result of VEM converges."))
+  return(tau)
+}
+
+```
+
+__(Q8)__ Apply your function to fit an SBM with 3 blocks simulated with the following code, and compare the results with the SBM with 3 blocks obtained using the SBM package.
+
+```{r}
+n <- 100 # fix a number of nodes (not too large)
+K <- 3 # fix a number of blocks
+pi <- c(0.1, 0.3, 0.6) # fix block proportions
+P <- matrix(c(0.8, 0.2, 0.1, 0.2, 0.8, 0.3, 0.1, 0.3, 0.8), nrow=3) # fix block connection probabilities
+simulated_sbm <- sampleSimpleSBM(n, pi, connectParam = list(mean = P)) # simulated an SBM
+simulated_A <- simulated_sbm$networkData # get the adjacency matrix A
+```
+
+```{r}
+tau_final <- VEM(pi, P, simulated_A)
+My_result <- rep(x=0, times=n)
+for (i in 1:n){
+  My_result[i] <- which.max(tau_final[i,])
+}
+My_result
+
+SimpleSBM <- estimateSimpleSBM(simulated_A)
+SimpleModels <- SimpleSBM$storedModels
+SimpleSBM$setModel(SimpleModels$indexModel[3])
+result_package <- SimpleSBM$memberships
+result_package
+
+```
+
+
+```{r}
+# compare results
+aricode::ARI(result_package, My_result)
+plotAlluvial(list(My=My_result, 
+                  Package=result_package))
+```
+
+
+## Measurements of Face-to-Face Contact Patterns in a Primary School
+
+Stehlé et al. [1] published in 2011 an article entitled 'High-Resolution Measurements of Face-to-Face Contact Patterns in a Primary School'. In this study, the authors aimed at describing and understanding patterns of physical contacts between school children, in order to quantify the risks of respiratory infection transmission. To do so, they collected face-to-face interactions data among 242 individuals (232 children and 10 teacher) and described the contact network with descriptive statistics. Network data as well as class labels are available in the data folder.
+
+```{r load-data, message=FALSE}
+library(igraph)
+g <- read_graph("network-data.gml", format=c("gml"))
+class <- read.table("class-labels.txt")
+```
+
+
+### Plots and descriptive statistics
+
+__(Q1)__ Use graphics to describe general properties of the network (distribution of degrees, average number of connections between classes, etc.). Use the **igraph** package to represent the network, color the nodes according to their class, and adjust their size to be proportional to the node's degree. Based on these descriptive statistics, do you think the SBM is adapted to the network?
+```{r}
+library(tidyverse)
+# check distribution of degrees
+degree(g)
+
+#summary of g
+summary(g)
+
+# check the number of nodes in each class
+factor(class$V2) %>% table() %>% as_tibble() %>% rmarkdown::paged_table()
+
+#average number of connections between classes
+
+
+#represent the network
+plot.igraph(g, vertex.color=factor(class$V2), vertex.size=degree(g)*0.25,vertex.label=NA)
+```
+
+
+### Degree-Corrected SBM
+
+In this final part, we will look at an extension of the SBM which allows to take into account degree heterogeneity in the data set, and apply it to the real contact network data.
+
+__(Q2)__ Using the **sbm** R package, fit an SBM to the adjacency with number of blocks selected by maximizing the ICL. Compare the obtained block memberships with the known class labels, and check the average degree in each cluster. Comment the results.
+```{r}
+g_matrix <- as_adj(g, sparse = FALSE)
+MysimpleSBM <- estimateSimpleSBM(g_matrix)
+
+# select the best model maximizing the ICL
+MysimpleModels <- MysimpleSBM$storedModels # the best model corresponding to each number of cluster
+idx <- which.max(MysimpleModels$ICL)
+MysimpleSBM$setModel(MysimpleModels$indexModel[idx])
+
+# compare the memberships and known class labels 
+aricode::ARI(MysimpleSBM$memberships, class$V2)
+plotAlluvial(list(MysimpleSBM=MysimpleSBM$memberships, 
+                  knownLabel=class$V2))
+```
+
+
+
+The degree-corrected SBM (DCSBM) is an extension of the SBM which accounts for degree heterogeneity among clusters. For each node $i\in n$, we introduce a parameter $\theta_i\in(0,1)$ such that $n\theta_i$ is the average degree of node $i$. The generative model writes as follows
+
+$$z_i \sim \text{Multinom}(1,\pi_1,\ldots,\pi_K),$$
+$$\mathbb{P}(A_{ij}=1|z_{ik}=1,z_{il}=1) = \theta_i\theta_j Q_{kl}.$$
+
+The DCSBM is estimated using the greed R package. Check the help of the function greed, which is used to fit a DCSBM from an adjacency matrix, specifying the model "dcsbm".
+
+*Hint*: You can also check [the vignettes of the package on the CRAN](https://cran.r-project.org/web/packages/greed/vignettes/graph-clustering-with-sbm.html).
+
+
+```{r, message=FALSE}
+library(greed)
+?greed
+```
+
+__(Q3)__  Fit the DCSBM with 11 blocks to the contact tracing network, and compare the results to those obtained with the classical SBM.
+
+*Hint 1*: In greed package, the solution with $k$ blocks is obtained using the function cut (see vignette). 
+
+*Hint 2*: The clustering results are obtained using the function slot.
+```{r,warning=FALSE}
+sol <- greed(g_matrix)
+
+sol_K11 = cut(sol, K=11)
+aricode::ARI(MysimpleSBM$memberships, sol_K11@cl)
+plotAlluvial(list(MysimpleSBM=MysimpleSBM$memberships, 
+                  DCSBM=sol_K11@cl))
+```
+
+
+## References {-}
+
+[1] Stehlé J, Voirin N, Barrat A, Cattuto C, Isella L, et al. (2011) High-Resolution Measurements of Face-to-Face Contact Patterns in a Primary School. PLoS ONE 6(8): e23176. doi:10.1371/journal.pone.0023176

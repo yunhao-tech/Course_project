@@ -1,0 +1,161 @@
+---
+title: "Mixture models: exercices"
+---
+
+## Preliminary
+
+Only functions from `R`-base and stats (preloaded) are required plus packages from the **tidyverse** for data representation and manipulation.
+
+```{r mixture-model-lab-config, message = FALSE}
+library(tidyverse)
+theme_set(theme_bw())
+```
+
+## Faithful data
+
+The `faithful` data consist of the waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park, Wyoming, USA.
+
+
+```{r mixture-faitful-load}
+data("faithful")
+faithful %>% 
+  ggplot() + aes(x=waiting) + geom_density() + xlab("waiting (mm)")
+```
+
+Fit variants of a mixture of two Gaussian distributions to the faithful data.
+
+ 1. assuming different proportions, means and variances for the 2 distributions
+
+ 2. assuming same variances 
+ 
+ 3. assuming same means
+ 
+ 4. assuming same proportions
+
+### Hint: skeleton of EM for 1D mixture of Gaussian
+
+We follow what has been done during the course: we define the function that computes the value of the likelihood for each point in each component. It will be used to compute the posterior probabilities in the E-step.
+
+```{r auxiliary function}
+## likelihood (density) of each point in each component
+## data (x) is fixed while theta is variable
+dcomponents <- function(theta, x) {
+    mapply(
+      function(pi, mu, sigma) pi * dnorm(x, mu, sigma),
+      theta$pi, theta$mu, theta$sigma,
+      SIMPLIFY = TRUE
+    )
+}
+```
+
+Then, we define an EM where the function that computes the M step is given as an argument:
+
+```{r general EM}
+mixture_gaussian1D <- 
+  function(x,      # a n-vector of data
+           theta0, # starting values of vector parameter
+           M_step    = M_step_general, # an R function
+           max_iter  = 100,
+           threshold = 1e-6) {
+
+  ## initialization
+  n <- length(x)
+  likelihoods  <- dcomponents(theta0, x) 
+  deviance     <- numeric(max_iter)
+  deviance[1]  <- -2 * sum(log(rowSums(likelihoods)))
+
+  for (t in 1:max_iter) {
+    
+    # E step
+    tau <- likelihoods / rowSums(likelihoods)
+
+    # M step
+    theta <- M_step(tau, x)
+    
+    ## Assessing convergence
+    likelihoods   <- dcomponents(theta, x)
+    deviance[t+1] <- - 2 * sum(log(rowSums(likelihoods)))
+
+    ## prepare next iterations
+    if (abs(deviance[t + 1] - deviance[t]) < threshold)
+      break
+    
+  }
+
+  list(theta = theta, deviance = deviance[t + 1])
+}
+```
+
+### 1. assuming different proportions, means and variances for the 2 distributions
+```{r}
+# for each variant, M_step_general is different.
+# (The M-step is different) because we add some hypothesis.
+M_step_general_1 <- function(tau, x){
+  pi <- colMeans(tau)
+  mu <- colSums(tau*x) / colSums(tau)
+  sigma <- sqrt(colSums(tau*x^2) / colSums(tau) - mu^2)
+  list(pi = pi, mu = mu, sigma = sigma)
+}
+
+out <- mixture_gaussian1D(faithful$waiting, theta0=list(pi=c(.5,.5), mu=c(50,80), sigma=c(5,5)),M_step= M_step_general_1)
+out$theta
+out$deviance
+```
+
+```{R}
+# BIC
+out$deviance + log(length(faithful$waiting)) * 5
+# 5 parameters : 1 pi, 2 means mu, 2 variance sigma
+```
+
+### 2. assuming same variances
+```{R}
+M_step_general_2 <- function(tau, x){
+  pi <- colMeans(tau)
+  mu <- colSums(tau*x) / colSums(tau)
+  sigma <- sqrt(mean(x^2) - sum(pi * mu^2))
+  list(pi = pi, mu = mu, sigma = sigma)
+}
+out_2 <- mixture_gaussian1D(faithful$waiting, theta0=list(pi=c(.4,.6), mu=c(50,80), sigma=c(5,5)), M_step = M_step_general_2)
+
+out_2$theta
+out_2$deviance
+```
+```{r}
+out_2$deviance + log(length(faithful$waiting)) * 4
+# 4 parameters : 1 pi, 2 means mu, 1 variance sigma
+```
+
+### 4. assuming same proportions
+```{r}
+M_step_general_4 <- function(tau, x){
+  pi <- c(.5,.5)
+  mu <- colSums(tau*x) / colSums(tau)
+  sigma <- rep(sqrt(mean(x^2) - sum(pi * mu^2)), 2)
+  list(pi = pi, mu = mu, sigma = sigma)
+}
+out_4 <- mixture_gaussian1D(faithful$waiting, theta0=list(pi=c(.5,.5), mu=c(50,80), sigma=c(5,5)),M_step = M_step_general_4)
+out_4$theta
+out_4$deviance
+```
+```{r}
+out_4$deviance + log(length(faithful$waiting)) * 4
+# 4 parameters : 2 means mu, 2 variance sigma
+```
+
+## Epilepsy data
+
+The data `seizures.csv` consists of  daily counts of epileptic seizures for 6 patients. 
+
+```{r mixture-seizures-load, message = FALSE}
+seizures <- readr::read_csv('seizures.csv')
+seizures %>% 
+  ggplot() + aes(x = time, y = nsz) + geom_point() + facet_wrap( ~ id)
+```
+ 
+  1. Select the id 12 and fit a Poisson distribution to the number of seizures for this patient.
+
+  2. Implement and use a EM algorithm for fitting a mixture of 2 Poisson distributions to this data
+  
+  3. Compare the two models
+  

@@ -1,0 +1,187 @@
+---
+title: 'Statistical tests: exercices'
+---
+
+## Preliminary
+
+Only functions from `R`-base and stats (preloaded) are required plus packages from the tidyverse for data representation and manipulation:
+
+```{r test-config, message = FALSE}
+library(tidyverse)
+theme_set(theme_bw())
+```
+
+## Gene expression
+
+The dataset `geHT.csv` consists of gene expression measurements for ten genes under control and treatment conditions, with four replicates each.
+
+```{r test-gene-read, message = FALSE}
+gene_data  <- readr::read_csv("geHT.csv")
+controls   <- gene_data %>% dplyr::select(starts_with("c")) %>% unlist()
+treatments <- gene_data %>% dplyr::select(starts_with("t")) %>% unlist()
+```
+
+  1. Plot the data using boxplots to compare control versus treatment
+  
+```{r}
+data.frame(
+   expr = c(controls, treatments), 
+   status = rep(c("control", "treatment"), each = 40)) %>%  # repeat 40 times because length(control)=40
+  ggplot() + aes(x = status, y  =expr) + geom_boxplot()
+# boxplot(controls, treatments)
+```
+  
+
+  2. Test the hypothesis that the mean of the control expression values is 2000.
+ 
+*Hint:* Use the `t.test` function to perform the test (`> ?t.test` for more information about this function)
+
+```{r}
+mu0 = 2000
+t.test(controls, alternative = "two.sided", mu  =mu0)
+
+x_mean <- mean(controls)
+x_sd <- sd(controls)
+n <- length(controls)
+df <- n - 1
+
+t.stat <- sqrt(n)*(x_mean-mu0)/x_sd
+p.value <- 2*pt(-abs(t.stat),df) 
+c(t.stat, df, p.value)
+```
+   
+  3. Test that there is no difference overall between the treatments and controls for any of the genes (test
+that the whole experiment didn't work or there are no differentially expressed genes)
+
+```{r}
+t.test(controls, treatments, paired = TRUE)
+
+t.test(controls-treatments, mu=0)
+```
+
+*Hint:* Compare the results ignoring/knowing that the data are paired data.
+
+  4. Test if the variances for the gene expression are the same under treatment or control
+conditions
+
+*Hint:* Perform a $F$ test to compare the two variances using the `var.test` function (`> ?var.test` for more information about this function)
+
+```{r}
+var.test(controls, treatments, ratio = 1)
+
+```
+
+
+## Smoking, no smoking
+
+   1. There are 88 smokers among a group of 300 people of a same population. Test that the proportion of smokers in this population is less than or equal to 0.25, greater than or equal to 0.25, equal to 0.25. Show that we can use an exact test, or a test relying on an approximation.
+
+*Hint:* What is the probability distribution of the number $X_1$ of smokers in this group of $n_1=300$ people ? Look at the `binom.test` and `prop.test` functions.
+```{r}
+x1 <- 88
+n1 <- 300
+p0 <- 0.25
+binom.test(x1, n1, p=p0, alternative="greater")
+```
+
+
+
+
+   2. There are 90 smokers in another group of 400 people, coming  from another population. Can we conclude that the proportion of smokers are different in these two populations?
+
+*Hint:* look at the `fisher.test` and `prop.test` functions.
+
+```{r test-hint-smoking}
+## help in building thecontingency table
+smokers     <- c(88, 90)
+non.smokers <- c(300-88, 400-90)
+smoke <- matrix(c(smokers,non.smokers), nrow = 2)
+fisher.test(smoke)
+```
+
+## Efficacy of the BNT162b2 mRNA Covid-19 Vaccine
+
+In an ongoing multinational, placebo-controlled, observer-blinded, pivotal efficacy trial, a total of 43,548 participants underwent randomization, of whom 43,448 received injections: 21,720 with BNT162b2 and 21,728 with placebo. There were 8 cases of Covid-19 with onset at least 7 days after the second dose among participants assigned to receive BNT162b2 and 162 cases among those assigned to placebo.
+
+Based on this result, [Pfizer](https://www.pfizer.com/news/press-release/press-release-detail/pfizer-and-biontech-conclude-phase-3-study-covid-19-vaccine) concludes that BNT162b2 was 95% effective in preventing Covid-19.
+
+  1. How was this value obtained?
+  
+*Hint:* The idea is to compare the observed number of BNT162b2 participants who were really infected with the expected number of BNT162b2 participants who would have been infected if the vaccine was not more effective than the placebo.
+
+Let $p_0$ and $p_1$ be the probabilities to be infected in the placebo and BNT162b2 groups. How can $p_0$ and $p_1$ be estimated? How can the expected number of BNT162b2 participants be estimated under the null hypothesis ($p_0=p_1$)?
+  
+  2. Derive a 95% confidence interval for the vaccine efficacy $VE$
+     using a normal approximation for $\log(\hat{p}_1/\hat{p}_0)$ where $\hat{p}_0$ and $\hat{p}_1$ are the empirical proportions of cases of Covid-19 in the two groups,
+     
+*Hint:* What are the asymptotic distributions of $\hat{p}_0$ and $\hat{p}_1$?  Using the delta-method, compute the asymptotic distribution for $\log(\hat{p}_0)$ and $\log(\hat{p}_1)$ and  $\log(\hat{p}_1/\hat{p}_0)$. Derive a confidence interval for $\log(p_1/p0)$ and then for $VE$.
+
+   3. Derive a 95% confidence interval for the vaccine efficacy approximating a confidence interval for ${p}_1/{p}_0$ by a prediction interval for $\hat{p}_1/\hat{p}_0$ and using a Monte-Carlo simulation for estimating this prediction interval. 
+
+*Hint:*
+
+```{r test-hint-covid-q3, eval=FALSE}
+n0 <- 21728
+n1 <- 21720
+m0 <- 168
+m1 <- 8
+hat.p0 <- m0 / n0
+hat.p1 <- m1 / n1
+
+K <- 1000000
+x0 <- rbinom(K, n0, hat.p0)
+x1 <- rbinom(K, n1, hat.p1)
+## just complete to estimate the target quantities
+efficiency <- 1 - (m1 / n1) / (m0 / n0)
+quantile(efficiency, probs=c(.05, .5, 0.95))
+
+```
+
+## Identification of genes 
+
+Breast cancer is the most common malignant disease in Western women. In these patients, it is not the primary tumour, but its metastases at distant sites that are the main cause of death.
+
+Prognostic markers are needed to identify patients who are at the highest risk for developing metastases, which might enable oncologists to begin tailoring treatment strategies to individual patients. Gene-expression signatures of primary breast tumours might be one way to identify the patients who are most likely to develop metastatic cancer.
+
+The datafile `geneMFS.csv` contains the expression level of 11 genes and the metastasis-free survival (the period until metastasis is detected) for 527 patients.
+
+```{r test-cancer-read, message = FALSE}
+cancer <- read_csv("geneMFS.csv") 
+```
+
+The objective of this study is to identify which genes may be good or poor prognosis for the development of metastasis.
+
+   1. Graphically compare the distribution of the gene expressions in the groups of patients with early metastasis (MFS <1000) and late metastasis (MFS>1000).
+
+*Hint:* Consider using `scale_y_log10()`
+```{r}
+cancer %>% mutate(group = ifelse(survival < 1000, 'early', 'late')) %>% # add a column named group
+  select(-survival) %>% # delete the survival column
+  pivot_longer(-group, names_to = 'gene', values_to = 'expression') %>% 
+  ggplot(aes(x =gene, fill = group, y = expression)) + geom_boxplot() + theme_bw() + scale_y_log10()
+```
+
+   2. Compare the gene expression levels in these two groups using a parametric test.
+   
+*Hint:* Perform a t-test for comparing the log-expression of each gene. Use the `p.adjust` function to apply the Bonferroni correction and the Benjamini-Hochberg correction to these $p$-values.
+
+```{r}
+cancer_tidy <- cancer %>% mutate(group = ifelse(survival < 1000, 'early', 'late')) %>% # add a column named group
+  select(-survival) %>% # delete the survival column
+  pivot_longer(-group, names_to = 'gene', values_to = 'expression')
+```
+
+```{r}
+my_list <- split(cancer_tidy, cancer_tidy$gene)
+
+ABI_data <- split(my_list$ABI1$expression, my_list$ABI1$group)
+
+t.test(ABI_data$early, ABI_data$late)
+```
+
+   3. Compare these results with those obtained using a non parametric test.
+   
+*Hint:* Perform Wilcoxon rank sum tests (using the `wilcox.test` function)  instead of $t$ tests. 
+```{r}
+
+```

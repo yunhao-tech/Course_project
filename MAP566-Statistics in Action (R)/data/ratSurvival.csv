@@ -1,0 +1,201 @@
+time,regimen,gender
+490,control,male
+575,control,male
+590,control,male
+605,control,male
+610,control,male
+635,control,male
+645,control,male
+675,control,male
+680,control,male
+720,control,male
+540,control,female
+645,control,female
+720,control,female
+720,control,female
+720,control,female
+720,control,female
+720,control,female
+720,control,female
+720,control,female
+720,control,female
+550,NK603-11%,male
+600,NK603-11%,male
+650,NK603-11%,male
+675,NK603-11%,male
+700,NK603-11%,male
+710,NK603-11%,male
+720,NK603-11%,male
+720,NK603-11%,male
+720,NK603-11%,male
+720,NK603-11%,male
+550,NK603-22%,male
+600,NK603-22%,male
+605,NK603-22%,male
+610,NK603-22%,male
+650,NK603-22%,male
+675,NK603-22%,male
+700,NK603-22%,male
+720,NK603-22%,male
+720,NK603-22%,male
+720,NK603-22%,male
+100,NK603-33%,male
+425,NK603-33%,male
+450,NK603-33%,male
+500,NK603-33%,male
+505,NK603-33%,male
+600,NK603-33%,male
+650,NK603-33%,male
+720,NK603-33%,male
+720,NK603-33%,male
+720,NK603-33%,male
+430,NK603-11%+R,male
+590,NK603-11%+R,male
+600,NK603-11%+R,male
+625,NK603-11%+R,male
+630,NK603-11%+R,male
+635,NK603-11%+R,male
+640,NK603-11%+R,male
+650,NK603-11%+R,male
+660,NK603-11%+R,male
+700,NK603-11%+R,male
+120,NK603-22%+R,male
+350,NK603-22%+R,male
+355,NK603-22%+R,male
+550,NK603-22%+R,male
+600,NK603-22%+R,male
+625,NK603-22%+R,male
+635,NK603-22%+R,male
+680,NK603-22%+R,male
+720,NK603-22%+R,male
+720,NK603-22%+R,male
+300,NK603-33%+R,male
+450,NK603-33%+R,male
+490,NK603-33%+R,male
+500,NK603-33%+R,male
+625,NK603-33%+R,male
+650,NK603-33%+R,male
+690,NK603-33%+R,male
+720,NK603-33%+R,male
+720,NK603-33%+R,male
+720,NK603-33%+R,male
+575,RoundUp A,male
+625,RoundUp A,male
+635,RoundUp A,male
+650,RoundUp A,male
+700,RoundUp A,male
+720,RoundUp A,male
+720,RoundUp A,male
+720,RoundUp A,male
+720,RoundUp A,male
+720,RoundUp A,male
+500,RoundUp B,male
+540,RoundUp B,male
+545,RoundUp B,male
+575,RoundUp B,male
+675,RoundUp B,male
+685,RoundUp B,male
+690,RoundUp B,male
+720,RoundUp B,male
+720,RoundUp B,male
+720,RoundUp B,male
+540,RoundUp C,male
+585,RoundUp C,male
+590,RoundUp C,male
+605,RoundUp C,male
+625,RoundUp C,male
+635,RoundUp C,male
+660,RoundUp C,male
+700,RoundUp C,male
+720,RoundUp C,male
+720,RoundUp C,male
+380,NK603-11%,female
+420,NK603-11%,female
+470,NK603-11%,female
+640,NK603-11%,female
+675,NK603-11%,female
+720,NK603-11%,female
+720,NK603-11%,female
+720,NK603-11%,female
+720,NK603-11%,female
+720,NK603-11%,female
+290,NK603-22%,female
+475,NK603-22%,female
+480,NK603-22%,female
+510,NK603-22%,female
+550,NK603-22%,female
+555,NK603-22%,female
+650,NK603-22%,female
+720,NK603-22%,female
+720,NK603-22%,female
+720,NK603-22%,female
+640,NK603-33%,female
+650,NK603-33%,female
+655,NK603-33%,female
+690,NK603-33%,female
+695,NK603-33%,female
+720,NK603-33%,female
+720,NK603-33%,female
+720,NK603-33%,female
+720,NK603-33%,female
+720,NK603-33%,female
+550,NK603-11%+R,female
+600,NK603-11%+R,female
+605,NK603-11%+R,female
+625,NK603-11%+R,female
+720,NK603-11%+R,female
+720,NK603-11%+R,female
+720,NK603-11%+R,female
+720,NK603-11%+R,female
+720,NK603-11%+R,female
+720,NK603-11%+R,female
+495,NK603-22%+R,female
+550,NK603-22%+R,female
+600,NK603-22%+R,female
+610,NK603-22%+R,female
+615,NK603-22%+R,female
+630,NK603-22%+R,female
+675,NK603-22%+R,female
+720,NK603-22%+R,female
+720,NK603-22%+R,female
+720,NK603-22%+R,female
+505,NK603-33%+R,female
+510,NK603-33%+R,female
+655,NK603-33%+R,female
+660,NK603-33%+R,female
+680,NK603-33%+R,female
+720,NK603-33%+R,female
+720,NK603-33%+R,female
+720,NK603-33%+R,female
+720,NK603-33%+R,female
+720,NK603-33%+R,female
+455,RoundUp A,female
+465,RoundUp A,female
+540,RoundUp A,female
+650,RoundUp A,female
+700,RoundUp A,female
+720,RoundUp A,female
+720,RoundUp A,female
+720,RoundUp A,female
+720,RoundUp A,female
+720,RoundUp A,female
+310,RoundUp B,female
+575,RoundUp B,female
+625,RoundUp B,female
+630,RoundUp B,female
+640,RoundUp B,female
+720,RoundUp B,female
+720,RoundUp B,female
+720,RoundUp B,female
+720,RoundUp B,female
+720,RoundUp B,female
+340,RoundUp C,female
+500,RoundUp C,female
+540,RoundUp C,female
+675,RoundUp C,female
+680,RoundUp C,female
+700,RoundUp C,female
+715,RoundUp C,female
+720,RoundUp C,female
+720,RoundUp C,female
+720,RoundUp C,female

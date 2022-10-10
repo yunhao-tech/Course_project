@@ -1,0 +1,385 @@
+---
+title: "MAP566 - Homework assignment #1"
+format:
+  html:
+    self-contained: true
+    theme: [cosmo, theme.scss]
+    toc: true
+    number-sections: true
+    html-math-method: katex
+    code-copy: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+---
+
+```{r, echo = FALSE, message=FALSE, results='hide', warning=FALSE}
+library(tidyverse)
+library(pwr) # power study 
+library(saemix)
+```
+
+# Hypothesis testing: Toxicity assessment of the MON810 maize
+
+## Introduction
+
+The data set `MON810.csv` consists of several measurements made during a subchronic toxicity study concerning the MON810 maize.
+
+```{r}
+MON810 <- readr::read_csv("MON810.csv", show_col_types = FALSE)
+rmarkdown::paged_table(MON810)
+```
+
+Biochemical parameters reflecting most physiological functions were measured two times (week 5 and 14), in particular through serum and urine chemistry, and hematology. Organ weights were measured at week 14.
+
+The main objective of this study is to evaluate possible GMO effects on these parameters.
+
+## Single comparison
+
+We consider the variable "CALCIUM".
+    
+  1. Test if the mean level of calcium for period 2 is the same for males and females (*hint:* plot first the data and justify the test(s) to use).
+  
+
+```{r}
+# plot the calcium level of period 2 for males and females
+
+MON810_clean <- MON810 %>% filter (!is.na(`CALCIUM blood`))
+
+MON810_clean %>% filter (period == 2) %>% 
+  ggplot(aes(x=sex, y=`CALCIUM blood`, colour=`CALCIUM blood`, fill=`CALCIUM blood`)) + 
+  geom_boxplot(alpha=0.5, outlier.alpha=0) +
+	geom_jitter(width=0.25) +
+	stat_summary(fun=mean, colour="red", geom="point",shape=18, size=3) + #red point is the mean
+  xlab("sex") + 
+  ylab("CALCIUM blood") +
+  ggtitle('level of calcium in period 2 for males and females') +
+  theme_bw()
+```
+   
+### Question 1
+Assume normal distribution for CALCIUM level in blood, we can perform student test.
+```{r}
+alpha <- 0.05
+x <- MON810_clean %>% filter (period == 2 & sex == 'F') %>% pull("CALCIUM blood")
+y <- MON810_clean %>% filter (period == 2 & sex == 'M') %>% pull("CALCIUM blood")
+cat('Variance of x is ', var(x), '\n') 
+cat('Variance of y is ', var(y), '\n') 
+# we assume different variance, based on the variance of samples
+t.test(x, y, conf.level = 1-alpha, var.equal = FALSE)
+```
+The p-value is quite small. We reject the null hypothesis. At level alpha=0.05, we could not prove that the mean level of calcium for period 2 is the same for males and females. It could also be observed in the figure above.
+
+
+    
+    
+  2. test for the males if the mean level of calcium is the same for period 1 and period 2.
+```{r}
+MON810_clean %>% filter (sex == 'M') %>% 
+  ggplot(aes(x=as.factor(period), y=`CALCIUM blood`, colour=`CALCIUM blood`, fill=`CALCIUM blood`)) + 
+  geom_boxplot(alpha=0.5, outlier.alpha=0) +
+	geom_jitter(width=0.25) +
+	stat_summary(fun=mean, colour="red", geom="point",shape=18, size=3) + #red point is the mean
+  xlab("period") + 
+  ylab("CALCIUM blood") +
+  ggtitle('level of calcium for males in period 1 and period 2') +
+  theme_bw()
+```
+```{r}
+alpha <- 0.05
+x <- MON810_clean %>% filter (period == 1 & sex == 'M') %>% pull("CALCIUM blood")
+y <- MON810_clean %>% filter (period == 2 & sex == 'M') %>% pull("CALCIUM blood")
+cat('Variance of x is ', var(x), '\n') 
+cat('Variance of y is ', var(y), '\n') 
+# we assume different variance, based on the variance of samples
+t.test(x, y, conf.level = 1-alpha, var.equal = FALSE)
+```
+
+### Question 2
+We can reject the null hypothesis. At level alpha=0.05, we could not prove that for the males if the mean level of calcium is the same for period 1 and period 2.
+
+
+  3. test for the males if the mean level of calcium for period 2 is the same for the control group and the MON810 group.
+```{r}
+MON810_clean %>% filter (sex == 'M' & period == 2 & (regimen == 'control' | regimen == 'MON810')) %>% 
+  ggplot(aes(x=regimen, y=`CALCIUM blood`, colour=`CALCIUM blood`, fill=`CALCIUM blood`)) + 
+  geom_boxplot(alpha=0.5, outlier.alpha=0) +
+	geom_jitter(width=0.25) +
+	stat_summary(fun=mean, colour="red", geom="point",shape=18, size=3) + #red point is the mean
+  xlab("regimen") + 
+  ylab("CALCIUM blood") +
+  ggtitle('level of calcium for males in period 2, for control group and MON810 group') +
+  theme_bw()
+```
+```{r}
+alpha <- 0.05
+x <- MON810_clean %>% filter (period == 2 & sex == 'M' & regimen == 'control') %>% pull("CALCIUM blood")
+y <- MON810_clean %>% filter (period == 2 & sex == 'M' & regimen == 'MON810') %>% pull("CALCIUM blood")
+cat('Variance of x is ', var(x), '\n') 
+cat('Variance of y is ', var(y), '\n') 
+# we assume different variance, based on the variance of samples
+t.test(x, y, conf.level = 1-alpha, var.equal = FALSE)
+```
+
+### Question 3
+The p-value is quite big. At level alpha=0.05, we could say that the mean level of calcium in period 2 for the males is the same for the control group and the MON810 group.
+
+
+  4. What is the probability to detect a difference of one standard deviation (1 sd) with only 10 animals per group? with 20 animal? How can we ensure to detect such difference with a probability of 80%?
+```{r}
+alpha <- 0.05
+pwr.t.test(n = 10, d = 1, type = "two.sample",
+           alternative="two.sided", sig.level = alpha)
+
+pwr.t.test(n = 20, d = 1, type = "two.sample",
+           alternative="two.sided", sig.level = alpha)
+
+pwr.t.test(power = 0.8, d = 1, sig.level=alpha)
+```
+
+### Question 4
+Conclusion:
+The probability to detect a difference of one standard deviation with 10 animals per group is 0.56;
+with 20 animal, the probability is 0.87
+To detect such difference with a probability of 80%, we need 17 animals per group (ceil(16.7) = 17).
+
+
+## Multiple comparisons
+
+  1. Redo the three tests of the previous section (questions 1-3) for now comparing the means of all the quantitative variables. Store the results (the p-values) in a data frame with one variable per row and four columns (name of the variable + three p-values). 
+```{r}
+do_all_comparisons <- function(data, alpha) {
+  map(colnames(MON810_clean)[5:51], 
+    function(col) {
+    # question 1 
+    males <- filter(data, period == 2 & sex == 'M') %>% pull(col)
+    females <- filter(data, period == 2 & sex == 'F') %>% pull(col)
+    t1 <- t.test(males, females, conf.level = 1-alpha, var.equal = FALSE)
+    # question 2 
+    period1 <- filter(data, period == 1 & sex == 'M') %>% pull(col)
+    period2 <- filter(data, period == 2 & sex == 'M') %>% pull(col)
+    t2 <- t.test(period1, period2, conf.level = 1-alpha, var.equal = FALSE)
+    # question 3
+    control <- filter (data, period == 2 & sex == 'M' & regimen == 'control') %>% pull(col)
+    g_MON810 <- filter (data, period == 2 & sex == 'M' & regimen == 'MON810') %>% pull(col)
+    t3 <- t.test(control, g_MON810, conf.level = 1-alpha, var.equal = FALSE)
+    data.frame(
+      Variable    = col,
+      p.value_q1    = t1$p.value,
+      p.value_q2    = t2$p.value,
+      p.value_q3    = t3$p.value
+    )
+  }) %>% bind_rows()
+}
+
+all_comparisons <- do_all_comparisons(MON810_clean, alpha = 0.05)
+all_comparisons %>% rmarkdown::paged_table()
+```
+   
+   2. For each of the three tests, adjust the p-values using the Bonferroni  and the Benjamini-Hochberg corrections. How can we interpret these results?
+```{r}
+m <- nrow(all_comparisons)
+all_comparisons$p.value_bonferonni_q1 <- pmin(1, all_comparisons$p.value_q1 * m)
+all_comparisons$p.value_bonferonni_q2 <- pmin(1, all_comparisons$p.value_q2 * m)
+all_comparisons$p.value_bonferonni_q3 <- pmin(1, all_comparisons$p.value_q3 * m)
+all_comparisons$p.bh_q1 <- p.adjust(all_comparisons$p.value_q1, method = "BH")
+all_comparisons$p.bh_q2 <- p.adjust(all_comparisons$p.value_q2, method = "BH")
+all_comparisons$p.bh_q3 <- p.adjust(all_comparisons$p.value_q3, method = "BH")
+all_comparisons %>% rmarkdown::paged_table()
+```
+
+### Question 3
+Conclusion:
+The p-values in question 1 and question 2 become bigger under Bonferroni corrections, as well as under Benjamini-Hochberg correction. 
+And p-values in question 3 after correction are bounded by 1, or close to 1. That is to say, we are almost sure that there is a difference of all biochemical parameters between MON810 group and control group, for period 2, for males. 
+  
+# Linear models: quarterly sales volumes
+
+## Fitting a linear model
+
+The file `sales1.csv` consists of quarterly sales volumes (in % and indexed to the time 0) of a product.
+
+```{r}
+sales1 <- readr::read_csv("sales1.csv", show_col_types = FALSE)
+rmarkdown::paged_table(sales1)
+```
+
+  1. Plot the data and comment.
+```{r}
+sales1_plot <- ggplot(data = sales1, aes(x = time, y = y)) +
+  geom_point() + 
+  xlab("Time") +  
+  ylab("Quarterly sales volume") + 
+  theme_bw()
+sales1_plot
+```
+
+### Question 1
+It seems that the sales volume increases with the time. We can try a linear model to fit it.
+
+  2. Fit a polynomial model to this data (justify the choice of the degree). What do the residuals suggest? 
+```{r}
+sales1_plot + geom_smooth(method = "lm", formula = y ~ x, se = FALSE, colour="#339900")
+model1 <- lm(y~time, data=sales1)
+par(mfrow=c(2,2))
+plot(model1)
+summary(model1)
+```
+
+### Question 2
+We choose polynomial model with degree 1, because the plot shows the linear relation between time and sales volume. 
+Those 4 figures show that the residuals are centered gaussian, have homosedasctic variance, which corresponds well with the assumptions of gaussian linear regression. 
+But the Residual standard error in summary shows that the residuals are relatively big. We can try to fit a better model.
+
+
+  3. Try to improve the model by adding a periodic component. Write your final model as a mathematical equation.
+
+::: {.callout-info} 
+
+### Hints
+  - $\cos(2\pi t/T)$ and $\sin(2\pi t/T)$ are periodic functions of period $T$.
+  - One can easily deduce the period $T$ from the context and looking at the data.
+:::
+
+### Question 3
+The improved model is:
+$$ y = k*time + A*(cos(2*pi*time/T + phi)) $$
+
+  4. Plot on a same graph the observed sales together with the predicted sales given by your final model. What do you think about this model? What about the residuals?
+```{r}
+# nlm model
+nlm1 <- nls(y ~ k*time + b + A*cos(time*2*pi/T + phi), sales1, 
+            start = c(k=0.3, b=100, A=5, T=10, phi=1))
+
+pred_time <- data.frame(time = seq(0, 100, by=1))
+pred_sales <- predict(nlm1, newdata=pred_time)
+prediction1 <- pred_time %>% mutate(sales=pred_sales)
+
+sales1_plot +
+  geom_line(data = prediction1, aes(x = time, y = sales, colour="red"))
+summary(nlm1)
+```
+### Question 4
+This modified model represents well the periodic property of sales volume. 
+Regarding the residuals, they are in average smaller compared to the previous linear model (1.05 compared to 2.2).
+
+
+  5. We want the predicted sales volume to be equal to 100 at time 0. Modify your final model in order to take this constraint into account.
+```{r}
+nlm2 <- nls(y ~ k*time + A*(cos(time*2*pi/T + phi) - cos(phi)) + 100, sales1, 
+            start = c(k=0.3, A=5, T=11, phi=5))
+
+pred_time <- data.frame(time = seq(0, 100, by=1))
+pred_sales2 <- predict(nlm2, newdata=pred_time)
+prediction2 <- pred_time %>% mutate(sales=pred_sales2)
+
+sales1_plot +
+  geom_line(data = prediction2, aes(x = time, y = sales, colour="red"))
+summary(nlm2)
+```
+### Question 5
+The final model is:
+$$y = k*time + A*(cos(2*pi*time/T + phi) - cos(phi)) + 100$$
+
+## Fitting a linear mixed effects model
+
+The file `sales30.csv` now consists of quarterly sales volumes (still in % and indexed to the time 0) of 30 different products.
+
+```{r}
+sales30 <- readr::read_csv("sales30.csv", show_col_types = FALSE) %>% mutate(id = as.factor(id))
+rmarkdown::paged_table(sales30)
+```
+
+  1. Plot the data and comment
+```{r}
+sales30_plot <- ggplot(data = sales30, aes(x = time, y = y, color=id)) +
+  geom_line() + facet_wrap(~id) +
+  xlab("Time") +  
+  ylab("Quarterly sales volume") + 
+  theme_bw()
+sales30_plot
+```
+### Question 1
+Comment:
+We find that for most products, the trend of sales volumes over time is similar to the previous case. 
+But there are also several products whose sales volume is almost constant with a little fluctuations. For instance, products with id=12,13,14.
+
+ 
+  2. Adjust the model used previously for fitting the first series to this data and comment the results.
+```{r}
+nlm30_1 <- nls(y ~ k*time + b + A*cos(time*2*pi/T + phi), sales30, 
+            start = c(k=0.2, b=100, A=5, T=11, phi=1))
+summary(nlm30_1)
+```
+```{r}
+pred_time <- data.frame(time = seq(0, 100, by=1))
+pred_sales30_1 <- predict(nlm30_1, newdata=pred_time)
+prediction30_1 <- pred_time %>% mutate(sales=pred_sales30_1)
+
+ggplot(data = sales30, aes(x = time, y = y)) +
+  geom_line(size=1) + facet_wrap(~id) +
+  theme_bw() +
+  geom_line(data = prediction30_1, aes(x = time, y = sales), colour='#339900')
+```
+
+### Question 2
+The green line is the fitted model. In some cases, it can reflect the general trend. But in some extreme cases, for instance, id=12,13,14, there is a big gap between the true value and predicted value. 
+Therefore, we need to consider the random effect for each product.
+
+  3. Fit a mixed effect model to this data (discuss the choice of fixed and random effects). Write your final model as a mathematical equation.
+```{r}
+saemix_data <- saemixData(name.data       = sales30,
+                          name.group      = "id",
+                          name.predictors = "time",
+                          name.response   = "y")
+
+model1_nlme <- function(psi,id,x) {
+  t   <- x[,1]
+  k  <- psi[id,1]
+  A   <- psi[id,2]
+  b  <- psi[id,3]
+  T <-psi[id,4]
+  phi <- psi[id,5]
+  fpred <- k*t + b + A*cos(t*2*pi/T + phi)
+  fpred
+}
+
+saemix_model1 <- saemixModel(model = model1_nlme,
+                            psi0  = c(k=0.3,A=2,b=100,T=11,phi=1))
+
+saemix_options <- list(map=TRUE, fim=TRUE, ll.is=FALSE, displayProgress=FALSE, save=FALSE, seed=632544)
+saemix_fit1    <- saemix(saemix_model1, saemix_data, saemix_options)
+```
+
+### Question 3
+We have to consider the random effect for all parameters. Because the plot of different products is quite different. Even the intercept is not the same.
+
+The mixed effect model is:
+$$ y_{ij} = f(t_{ij}, \psi_{i}) + \epsilon_{ij} \\where\ \psi_{i} = (k_{i}, A_{i}, b_{i}, T_{i}, phi_{i}) \\ f(t,\psi) = k*t + b + A*cos(t*2*pi/T + phi) \\for\ i = 1...N, j = 1...n_{i}$$
+N is the number of products. n_i is the number of measurements for product i.
+
+
+  4. Plot the data with the predicted sales given by the chosen model.
+```{r}
+saemix.plot.fits(saemix_fit1)
+```
+
+  5. Modify the previous model to take into account the previous constraint (predicted sales volume are all equal to 100 at time 0). 
+```{r}
+model2_nlme <- function(psi,id,x) {
+  t   <- x[,1]
+  k  <- psi[id,1]
+  A   <- psi[id,2]
+  T <-psi[id,3]
+  phi <- psi[id,4]
+  fpred <- k*t + A*(cos(t*2*pi/T + phi) - cos(phi)) + 100
+  fpred
+}
+
+saemix_model2 <- saemixModel(model = model2_nlme,
+                            psi0  = c(k=0.3,A=2,T=11,phi=1))
+saemix_fit2 <- saemix(saemix_model2, saemix_data, saemix_options)
+```
+
+### Question 5
+The final effect model is:
+$$ y_{ij} = f(t_{ij}, \psi_{i}) + \epsilon_{ij} \\where\ \psi_{i} = (k_{i}, A_{i}, b_{i}, T_{i}, phi_{i}) \\ f(t,\psi) = k*t + A*(cos(t*2*pi/T + phi) - cos(phi)) + 100 \\for\ i = 1...N, j = 1...n_{i}$$

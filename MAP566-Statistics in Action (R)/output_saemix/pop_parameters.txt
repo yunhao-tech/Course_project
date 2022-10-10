@@ -1,0 +1,100 @@
+Nonlinear mixed-effects model fit by the SAEM algorithm
+-----------------------------------
+----          Data             ----
+-----------------------------------
+Object of class SaemixData
+    longitudinal data for use with the SAEM algorithm
+Dataset males11 
+    Structured data: weight ~ week | id 
+    Predictor: week () 
+    covariates: regime (-) 
+      reference class for covariate regime :  Control 
+Dataset characteristics:
+    number of subjects:     40 
+    number of observations: 560 
+    average/min/max nb obs: 14.00  /  14  /  14 
+First 10 lines of data:
+-----------------------------------
+----          Model            ----
+-----------------------------------
+Nonlinear mixed-effects model
+  Model function
+function(psi, id, x) { 
+  t <- x[,1]
+  A <- psi[id, 1]
+  b <- psi[id, 2]
+  c <- psi[id, 3]
+  ypred <- A*exp(-exp(-b*(t-c)))
+  ypred
+}
+<bytecode: 0x7fe019b35540>
+  Nb of parameters: 3 
+      parameter names:  A b c 
+      distribution:
+     Parameter Distribution Estimated
+[1,] A         log-normal   Estimated
+[2,] b         log-normal   Estimated
+[3,] c         log-normal   Estimated
+  Variance-covariance matrix:
+  A b c
+A 1 0 0
+b 0 1 0
+c 0 0 1
+  Error model: constant , initial values: a.=1 
+  Covariate model:
+       [,1] [,2] [,3]
+regime    1    1    1
+    Initial values
+               A   b   c
+Pop.CondInit 500 0.2 0.2
+Cov.CondInit   0 0.0 0.0
+-----------------------------------
+----    Key algorithm options  ----
+-----------------------------------
+    Estimation of individual parameters (MAP)
+    Estimation of standard errors and linearised log-likelihood
+    Number of iterations:  K1=300, K2=100 
+    Number of chains:  2 
+    Seed:  12345 
+    Simulations:
+        nb of simulated datasets used for npde:  1000 
+        nb of simulated datasets used for VPC:  100 
+    Input/output
+        save the results to a file:  TRUE 
+        save the graphs to files:  TRUE 
+        directory where results should be saved:  output_saemix 
+----------------------------------------------------
+----                  Results                   ----
+----------------------------------------------------
+-----------------  Fixed effects  ------------------
+----------------------------------------------------
+     Parameter      Estimate SE     CV(%) p-value
+[1,] A              535.10   12.186   2.3 -      
+[2,] beta_regime(A)  -0.03    0.032 108.5 0.18   
+[3,] b                0.22    0.011   5.1 -      
+[4,] beta_regime(b)   0.01    0.071 681.2 0.44   
+[5,] c                0.03    0.033 112.4 -      
+[6,] beta_regime(c)   0.51    1.395 275.4 0.36   
+[7,] a.              12.78    0.414   3.2 -      
+----------------------------------------------------
+-----------  Variance of random effects  -----------
+----------------------------------------------------
+  Parameter Estimate SE     CV(%)
+A omega2.A  0.0095   0.0023 24   
+b omega2.b  0.0384   0.0111 29   
+c omega2.c  3.5577   2.1025 59   
+----------------------------------------------------
+------  Correlation matrix of random effects  ------
+----------------------------------------------------
+         omega2.A omega2.b omega2.c
+omega2.A 1        0        0       
+omega2.b 0        1        0       
+omega2.c 0        0        1       
+----------------------------------------------------
+---------------  Statistical criteria  -------------
+----------------------------------------------------
+Likelihood computed by linearisation
+      -2LL= 4724.07 
+      AIC = 4744.07 
+      BIC = 4760.958 
+----------------------------------------------------

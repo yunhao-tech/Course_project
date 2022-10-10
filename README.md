@@ -2,6 +2,27 @@
 The homework in form of Jupyter notebook
 
 List:
+
+* IPP Practical Machine learning
+    * Session 1: analyse on several unsupervised machine learning methods: K-means, GMM, PCA, t-SNE.
+
+* IPP Deep learning
+    * Lab 1: implement MLP from scratch
+    * Lab 2: implement MLP using pytorch
+    * Lab 3: RNN (Many-to-one)
+    * Lab 4: a simple language model
+
+* MAP566 Statistics in Action
+    * Homework 1: Hypothesis testing
+    * Homework 2: Variational Expectation-Maximization (VEM) and Stochastic Block Model (SBM)
+    * TD3: Polynomial regression model
+    * TD4: Nonlinear regression model
+    * TD5: linear mixed model
+    * TD6: non linear mixed model
+    * TD7: mixture models
+    * TD8: Graph Clustering: Spectral and hierarchical methods
+    * TD9: Graph Clustering: Stochastic Blockmodels
+
 * MAP556 Monte Carlo Methods:
     * TP1: Simulation of random variables + Law of large numbers + Central limit theorem
     * TP2: Serveral methods of variance reduction
@@ -61,6 +82,3 @@ List:
          * Algorithme d'Uzawa
          * Méthode de pénalisation
          * Algorithme du Lagrangien augmenté
-
-* IPP Practical Machine learning
-    * Session 1: analyse on several unsupervised machine learning methods: K-means, GMM, PCA, t-SNE.

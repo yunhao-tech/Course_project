@@ -1,0 +1,223 @@
+---
+title: 'Nonlinear Mixed Effects Models'
+subtitle: 'Exercices'
+---
+
+## Preliminary {.unnumbered}
+
+Functions from `R`-base and stats (preloaded) are required plus packages from the **tidyverse** for data representation and manipulation. We also need the **lme4** package which is the standard for fitting mixed-model. **lattice** is used for graphical representation of quantities such as random and fixed effects in the mixed models. **saemix** implements Stochastic EM algorithms to fit non-linear mixed effect models. 
+
+```{r packages, message = FALSE}
+library(tidyverse)
+library(saemix)
+library(corrplot)
+theme_set(theme_bw())
+```
+
+## Introduction
+
+@seralini2007new published the paper "New Analysis of a Rat Feeding Study with a Genetically Modified Maize Reveals Signs of Hepatorenal Toxicity". The authors of the paper pretend that, after the consumption of MON863, rats showed slight but dose-related significant variations in growth.
+
+The objective of this exercise is to highlight the flaws in the methodology used to achieve this result, and show how to properly analyse the data.
+
+We will restrict our study to the male rats of the study fed with 11% of maize (control and GMO)
+
+```{r data loading, message = FALSE}
+rats <- read_csv("data/ratWeight.csv")
+males11 <- filter(rats, gender == "Male" & dosage == "11%")
+males11 %>% rmarkdown::paged_table()
+```
+
+## Nonlinear fixed effect model reproducing Seralini et al.'s study
+
+  1. Plot the growth curves of the control and GMO groups.
+```{r}
+males11_plot <- males11 %>% 
+  ggplot() + aes(x = week, y = weight, group = id, color = id) + geom_point(show.legend = FALSE) +
+  xlab("week") + ylab("weight (g)")
+#male11_plot + geom_line(color="#993399", aes(group = id))
+males11_plot + geom_line(show.legend = FALSE) + facet_wrap( ~ regime)
+```
+
+  2. Fit an Gompertz growth model $f_1(t) = A \exp(-\exp(-b(t-c)))$  to the complete data (males fed with 11% of maize) using a least square approach, with the same parameters for the control and GMO groups.
+```{r}
+f1 <- function(psi, t){
+  A <- psi[1]; b <- psi[2]; c <- psi[3]
+  f  <- A * exp(-exp(-b*(t-c)))
+  f
+}
+
+model_1 <- nls(weight ~ f1(psi, week), start = list(psi=c(A=500, b=0.5, c=0.01)), data=males11)
+# starting point: we try first a possible combination. 
+# Then based on the iteration result, we refine the starting point.
+coef(model_1)
+
+```
+
+  3. Fit a Gompertz growth model to the complete data using a least square approach, with different parameters for the control and GMO groups.
+  
+*Hint*: write the model as
+
+$$ y_{ij} = A_{0} e^{-e^{-b_0 (t_{ij}-c_0)}} \mathbf{1}_{\{{\rm regime\}}_i={\rm Control}} +
+A_{1} e^{- e^{-b_1 (t_{ij}-c_1)}} \mathbf{1}_{\{{\rm regime}_i={\rm GMO}\}} + \varepsilon_{ij}$$
+
+```{r}
+model_2 <- nls(weight ~ f1(psi_GMO, week)*(regime=='GMO') + f1(psi_control, week)*(regime=='Control'), start = list(psi_GMO=c(A=500, b=0.5, c=0.01), psi_control=c(A=500, b=0.5, c=0.01)), data=males11)
+# starting point: we try first a possible combination. 
+# Then based on the iteration result, we refine the starting point.
+coef(model_2)[1:3]
+```
+  4. Check out the results of the paper displayed Table 1, for the 11% males.
+```{r}
+df <- data.frame(
+  Control   = coef(model_2)[4:6],
+  GMO       = coef(model_2)[1:3],
+  oneModel = coef(model_1)
+)
+rownames(df) <- c("a","b","c")
+df
+```
+```{r}
+anova(model_1, model_2)
+AIC(model_1, model_2)
+```
+
+  5. Plot the residuals and explain why the results of the paper are wrong.
+```{r}
+males11 %>% 
+  mutate(residuals=residuals(model_1)) %>% 
+  ggplot() + aes(x=week, y=residuals) + geom_line() + geom_hline(yintercept = 0, colour='red') + facet_wrap(~id)
+```
+The plot shows that there is different trend of residuals on different individuals.
+We should consider random effect on individuals.
+
+## Nonlinear mixed effect model with SAEMIX
+
+We propose to use instead a mixed effects model for testing the effect of the regime on the growth of the 11% male rats. 
+
+### Gompertz model with random effects
+
+The codes below show how to fit a Gompertz model to the data 
+ 
+  - assuming the same population parameters for the two regime groups,
+  - using lognormal distributions for the 3 parameters (setting transform.par=c(1,1,1))
+  - assuming a diagonal covariance matrix $\Omega$ (default)
+
+#### Data declaration
+
+Create first the `saemixData` object
+
+```{r saemix create}
+saemix_data <- saemixData(
+  name.data       = males11, 
+  name.group      = "id",
+  name.predictors = "week",
+  name.response   = "weight"
+  )
+```
+
+#### Model declaration
+
+Implement then the structural model and create the `saemixModel` object. Initial values for the population parameters should be provided.
+
+```{r, message=FALSE, warning=FALSE, results='hide'}
+gompertz <- function(psi, id, x) { 
+  t <- x[,1]
+  A <- psi[id, 1]
+  b <- psi[id, 2]
+  c <- psi[id, 3]
+  ypred <- A*exp(-exp(-b*(t-c)))
+  ypred
+}
+
+psi0 <- c(A = 500, b = 0.2, c = 0.2)
+distribParam <- c(1, 1, 1)
+NLMM_gompertz <- saemixModel(model = gompertz, psi0 = psi0, transform.par = distribParam)
+```
+
+#### Model estimation
+
+Run **saemix** for estimating the population parameters, computing the individual estimates, computing the FIM and the log-likelihood (linearization)
+
+```{r, message=FALSE, warning=FALSE, results='hide', cache = TRUE}
+saemix_options <- saemixControl(
+  map   = TRUE,
+  fim   = TRUE, # fisher information matrix
+  ll.is = FALSE, # log-likelihood
+  displayProgress = FALSE,
+  directory = "output_saemix",
+  seed = 12345)
+NLMM_gompertz_fit <- saemix(NLMM_gompertz , saemix_data, saemix_options)
+```
+
+```{r}
+summary(NLMM_gompertz_fit)
+```
+
+#### Diagnostic plots:
+
+```{r, fig.height=6, message=FALSE, warning=FALSE}
+# Individual plot for subject 1 to 9, 
+saemix.plot.fits(NLMM_gompertz_fit, ilist = c(1:9), smooth=TRUE)
+```
+
+```{r, warning=FALSE,message=FALSE}
+# Diagnostic plot: observations versus population predictions
+saemix.plot.obsvspred(NLMM_gompertz_fit)
+```
+Explanation:
+Population predictions: model fitted with random effect, but we perform predictions without the individual params
+Individual predictions: model fitted with random effect, predictions with individual params
+
+```{r, fig.height=7}
+# Scatter plot of residuals
+saemix.plot.scatterresiduals(NLMM_gompertz_fit, level=1)
+```
+
+#### Correlation matrix of the estimates
+
+```{r}
+fim <- NLMM_gompertz_fit@results@fim # Fisher information matrix
+cov_hat <- solve(fim)                # covariance matrix of the estimates
+d <- sqrt(diag(cov_hat))             # s.e. of the estimates
+corrplot(cov_hat / (d %*% t(d)), type = 'upper', diag = FALSE)
+cov_hat / (d %*% t(d))               # correlation matrix of the estimates
+```
+
+### Questions
+
+  1. Fit the same model to the same data, assuming different population parameters for the control and GMO groups. Can we conclude that the regime has an effect on  the growth of the 11% male rats?
+
+New model is :
+$$\log(A_i) = \log(A_{\rm pop}) + \beta_A \mathbf{1}_{{\rm regime}_i = {\rm GMO}} + \eta_{A_i} $$
+Here, the covariate is regime.
+
+```{r}
+saemix_data <- saemixData(
+  name.data       = males11, 
+  name.group      = c("id"),
+  name.predictors = c("week"),
+  name.response   = c("weight"),
+  name.covariates = c("regime"))
+```
+
+  2. Use an asymptotic regression model $f(t) = w_{\infty} + (w_0 -w_{\infty})e^{-k\,t}$ to test the effect of the regime on the growth of the 11% male rats.
+```{r}
+covarParam <- rbind(c(1,1,1))
+NLMM_gompertz_model_2 <- saemixModel(
+  model = gompertz, 
+  psi0 = psi0, 
+  transform.par = distribParam,
+  covariate.model = covarParam)
+
+NLMM_gompertz_fit_2 <- saemix(NLMM_gompertz_model_2 , saemix_data, saemix_options)
+```
+p-values are big. It is not necessary to use covariats.
+The regime does not have an effect on predictions. 
+
+```{r}
+# we can compare their AIC and BIC
+```
+  3. Should we accept the hypothesis that the random effects are uncorrelated?
+
+## References

@@ -1,0 +1,178 @@
+---
+title: 'Nonlinear regression: exercices'
+---
+
+## Preliminary
+
+The usual libraries: 
+
+```{r linear-regression-config, message = FALSE}
+library(tidyverse)
+library(ggfortify) # extend some ggplot2 features
+library(broom)
+theme_set(theme_bw())
+```
+
+## Introduction
+
+We consider the same data file `ratWeight.csv` with rat weights measured over 14 weeks during a subchronic toxicity study related to the question of genetically modified (GM) corn. 
+
+## Questions
+
+1. Load the `ratWeight.csv` data file and plot the weight of the females of the control group
+```{r}
+rat_weight <- read_csv("ratWeight.csv")
+```
+
+```{r}
+rat_plot <-
+  rat_weight %>% filter(regime == 'Control', gender == 'Female') %>%
+  ggplot() +  aes(x = week, y = weight, group = id, color = id) + 
+  geom_line(show.legend = FALSE) + geom_point(show.legend = FALSE) +  xlab("week") + ylab("weight (grams)") + 
+  ggtitle("Weight of the females of the control group") + theme_bw()
+rat_plot
+```
+
+
+2. Select the ID `B38837` and fit a polynomial model to the growth curve of this female rat.
+```{r}
+rat_B38837 = rat_weight %>% filter(id == 'B38837') %>% select(weight, week)
+```
+
+```{r}
+lm0 <- lm(weight ~ 1, data = rat_B38837)
+lm1 <- lm(weight ~ poly(week, degree = 1), data = rat_B38837)
+lm2 <- lm(weight ~ poly(week, degree = 2), data = rat_B38837)
+lm3 <- lm(weight ~ poly(week, degree = 3), data = rat_B38837)
+lm4 <- lm(weight ~ poly(week, degree = 4), data = rat_B38837)
+lm5 <- lm(weight ~ poly(week, degree = 5), data = rat_B38837)
+
+# model comparison
+
+AIC(lm0, lm1, lm2, lm3, lm4, lm5)
+BIC(lm0, lm1, lm2, lm3, lm4, lm5)
+anova(lm0, lm1, lm2, lm3, lm4, lm5)
+```
+
+The best polynomial model seems to be the polynomial with degree 3.
+
+```{r}
+rat_B38837_plot <- rat_B38837 %>% 
+  ggplot() + aes(x = week, y = weight) + 
+  geom_point(size=2, colour="#993399") + xlab("week") + ylab("weight (grams)") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), se = FALSE, colour="#339900")
+rat_B38837_plot
+```
+
+However, if we apply polynomial of degree 3 to predict weight, we would find some strange result.
+Normally, there is no reason that weight increase significantly after week 14. But polynomial model may lead to this 
+kind of strange result which does not stick to reality. 
+[Polynomial de degree 5 may even lead to a decrease of weight after week 14.]
+Therefore, we should choose appropriate model considering the physical sense. 
+
+
+
+3. Fit a Gompertz model $f_1(t) = A e^{-b e^{-k\, t}}$ to this data.
+
+*Hint:* use for initial values: $A = 200, b = 1, k = 0.1$.
+```{r}
+nlm1 <- nls(weight ~ A * exp(-b * exp(-k * week)), data = rat_B38837, start = c(A = 200, b = 1, k = 0.1))
+
+summary(nlm1)
+```
+
+```{r}
+rat_B38837_plot <- rat_B38837_plot + 
+  geom_smooth(
+    method  = "nls",  se = FALSE, color = "#E69F00",
+    formula = y ~ A * exp(-b * exp(-k*x)), 
+    method.args = list(start = c(A = 200, b = 1, k = 0.1)))
+rat_B38837_plot
+```
+
+Predict using this model:
+```{r}
+pred_week <- data.frame(week = seq(0, 25, by = 0.5))
+pred_weight <- predict(nlm1, newdata = pred_week)
+prediction_mod1 <- pred_week %>% mutate(weight = pred_weight, model = 'Gompertz')
+
+Gompertz_plot <- rat_B38837 %>%
+  ggplot() + aes(x = week, y = weight) + geom_point() + 
+  geom_line(data = prediction_mod1)
+Gompertz_plot
+```
+The problem in polynomial models is resolved.
+
+
+
+4. Fit the two following growth models:
+
+  * Asymptotic regression model:
+
+$$f_2(t)  = A \left( 1 - b\, e^{-k\, t} \right)$$
+
+  * Logistic curve:
+$$f_3(t)  = \frac{A}{1 + e^{-\gamma( t-\tau)}}$$
+
+```{r}
+nlm2 <- nls(weight ~ A * (1 - b * exp(-k * week)), data = rat_B38837, start = c(A = 200, b = 1, k = 0.1))
+
+summary(nlm2)
+```
+```{r}
+nlm3 <- nls(weight ~ A / (1 +  exp(-gamma * (week - tau))), data = rat_B38837, start = c(A = 500, gamma=0.8, tau = 0))
+
+summary(nlm3)
+```
+Model comparison:
+```{r}
+AIC(nlm1, nlm2, nlm3)
+BIC(nlm1, nlm2, nlm3)
+# Attention, we could not use 'anova' because they are not nested !!!
+```
+Prediction:
+```{r}
+pred_weight_2 <- predict(nlm2, newdata = pred_week)
+prediction_mod2 <- pred_week %>% mutate(weight = pred_weight_2, model = 'model2')
+
+pred_weight_3 <- predict(nlm3, newdata = pred_week)
+prediction_mod3 <- pred_week %>% mutate(weight = pred_weight_3, model = 'model3')
+
+prediction <- rbind(prediction_mod1, prediction_mod2, prediction_mod3)
+rat_B38837 %>%
+  ggplot() + aes(x = week, y = weight) + geom_point() + 
+  geom_line(data = prediction, aes(color = model))
+```
+
+
+5. Propose two other parameterizations of the asymptotic regression model which involves 
+
+  a. the weight at birth $w_0$ (when $t=0$), the limit weight $w_\infty$ (when $t\to \infty$) and $k$
+  b. the weight at birth, the weight at the end of the study $w_{14}$ and the ratio $r=(w_{14}-w_{7})/(w_7 - w_0)$
+
+Can we compare these models?
+
+
+Idea: 
+f2(0) = A * (1 - b) = w0
+f2(infinity) = A = w_infinity
+After replacing A and b in f2, we obtain:
+f2(t) = w_infinity * (1 - exp(-kt)) + w0 * exp(-kt) := f_2a(t)
+
+In the same way, we can transform f2 into:
+f2(t) = w0 + (w_14 - w0) * (1 - r^(t/7)) / (1 - r^2) := f_2b(t)
+
+These two models are more interpretable. 
+
+```{r}
+init_2a = c(w0 = 130, winf = 250, k = 1)
+nlm2a <- nls(weight ~ winf * (1 - exp(-k * week)) + w0 * exp(-k * week), data = rat_B38837, start = init_2a)
+```
+
+6. We will now use model $f_{2a}$.  Check that the estimate of $\beta=(w_0, w_\infty, k)$ obtained with the `nls` function is the least squares estimate.
+
+7. Check that this estimate is also the least squares estimate of the linearized model. Then, how are computed the standard errors of $\hat\beta$?
+
+8. Compute 90% confidence intervals for the model parameters using several approaches (profile likelihood, linearization, parametric bootstrap)
+
+9. Compute a 90% confidence interval for the predicted weight and a 90% prediction interval for the measured weight using the delta method.

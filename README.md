@@ -1,5 +1,4 @@
-# ipynb-set
-Courses homeworks and projects
+# Courses homeworks & projects
 
 | Course       | Homeworks & Projects | Content | 
 | :--:         | :--:                 | :--:    | 

@@ -26,7 +26,7 @@
 |                                | [Challenge1](MAP556-Monte%20Carlo/Challenge%201/Solution.py)  | simulate E(f(G)), f is reasonably regular|
 |                                | [Challenge2](MAP556-Monte%20Carlo/Challenge%202/controle_etudiant.py)  | play Angry Bird! Try to give a control on velocity to the bird facing a random wind|
 |MAP553 Machine learning         | [TP1](MAP553-Machine%20learning/MAP553_tp1.ipynb)         | implement several optimization algorithms: **GD, AGD, CGD, SGD, SAG, SVRG** |
-|                                | [Project](MAP553-Machine%20learning/MAP553_project/autoML_MAP553.ipynb)     | a classic dataset of tree cover type classification, using auto machine learning |
+|                                | [Project](MAP553-Machine%20learning/MAP553_project/autoML_MAP553.ipynb)     | a classic dataset of tree cover type classification, using auto machine learning, 2nd in Kaggle competition |
 |INF580 Large scale mathematical optimization  | [Project](INF580-Large%20scale%20mathematical%20optimization/INF580.pdf) | combine random projection and linear programming. Retrieve solutions from projected problem and dual projected problem, compute primal solution. Compare their feasibility error and compute time |
 |MAP433 statistiques             | [TP1](MAP433-statistiques/EN1/EN1.ipynb)         | Estimation parametrique. Loi de Poisson pour modéliser le nombre de buts marqués par une équipe de football |
 |                                | [TP2](MAP433-statistiques/EN3/EN3.ipynb)          | Test de Cramer-von Mises|

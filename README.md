@@ -27,6 +27,11 @@
 |                                | [Challenge2](MAP556-Monte%20Carlo/Challenge%202/controle_etudiant.py)  | play Angry Bird! Try to give a control on velocity to the bird facing a random wind|
 |MAP553 Machine learning         | [TP1](MAP553-Machine%20learning/MAP553_tp1.ipynb)         | implement several optimization algorithms: **GD, AGD, CGD, SGD, SAG, SVRG** |
 |                                | [Project](MAP553-Machine%20learning/MAP553_project/autoML_MAP553.ipynb)     | a classic dataset of tree cover type classification, using auto machine learning, 2nd in Kaggle competition |
+|Reinforcement learning          | [Lab3](Reinforcement%20Learning%20algos/lab_rl3_value_iteration.ipynb) | Dynamic Programming - Value Iteration |
+|                                | [Lab4](Reinforcement%20Learning%20algos/lab_rl4_policy_iteration.ipynb) | Dynamic Programming - policy iteration |
+|                                | [Lab5](Reinforcement%20Learning%20algos/lab_rl5_temporal%20difference.ipynb) | Temporal Difference |
+|                                | [Lab6](Reinforcement%20Learning%20algos/lab_rl6_SARSA_QLearning.ipynb) | Q table - SARSA and Q Learning |
+|                                | [Lab7](Reinforcement%20Learning%20algos/lab_rl7_PolicyGradient.ipynb) | Policy Gradient |
 |INF580 Large scale mathematical optimization  | [Project](INF580-Large%20scale%20mathematical%20optimization/INF580.pdf) | combine random projection and linear programming. Retrieve solutions from projected problem and dual projected problem, compute primal solution. Compare their feasibility error and compute time |
 |MAP433 statistiques             | [TP1](MAP433-statistiques/EN1/EN1.ipynb)         | Estimation parametrique. Loi de Poisson pour modéliser le nombre de buts marqués par une équipe de football |
 |                                | [TP2](MAP433-statistiques/EN3/EN3.ipynb)          | Test de Cramer-von Mises|

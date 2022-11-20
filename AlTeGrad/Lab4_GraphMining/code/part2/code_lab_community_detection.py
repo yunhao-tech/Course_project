@@ -8,7 +8,7 @@ from scipy.sparse.linalg import eigs
 from scipy.sparse import diags, eye
 from random import randint
 from sklearn.cluster import KMeans
-
+from collections import defaultdict
 
 
 ############## Task 6
@@ -46,9 +46,12 @@ def spectral_clustering(G, k):
 
 ##################
 # your code here #
+G = nx.read_edgelist('AlTeGrad/Lab4_GraphMining/code/datasets/CA-HepTh.txt', comments='#', delimiter='\t')
+largest_cc = max(nx.connected_components(G), key=len)
+subG = G.subgraph(largest_cc)
+clusterings = spectral_clustering(G, 50)
+
 ##################
-
-
 
 
 
@@ -58,10 +61,17 @@ def modularity(G, clustering):
     
     ##################
     # your code here #
-    
+    res = defaultdict(list) # cluster number -> list of nodes
+    for key, val in sorted(clustering.items()):
+        res[val].append(key)
+    l_c = [G.subgraph(res[key]).number_of_edges() for key, _ in res.items()]
+    d_c = [sum([G.degree(node) for node in value]) for _, value in res.items()]
+    m = G.number_of_edges() # total number of edges
+    l_c_m = [ele / m for ele in l_c]
+    d_c_m = [(ele / (2*m))**2 for ele in d_c]
+    assert(len(l_c_m) == len(d_c_m))
+    modularity = sum([ele1 - ele2 for ele1, ele2 in zip(l_c_m, d_c_m)])
     ##################
-    
-
     
     
     return modularity
@@ -72,6 +82,13 @@ def modularity(G, clustering):
 
 ##################
 # your code here #
+print(f"The modularity of result of pectral Clustering is {modularity(G, clusterings)}")
+
+random_clusterings = {}
+for node in G.nodes():
+    random_clusterings[node] = randint(0, 49)
+print(f"The modularity of random clustering is {modularity(G, random_clusterings)}")
+
 ##################
 
 

@@ -12,8 +12,8 @@ import numpy as np
 
 ##################
 # your code here #
-# This is a directed graph
-G = nx.read_edgelist('datasets/CA-HepTh.txt', comments='#', delimiter='\t')
+# This is a directed graph 
+G = nx.read_edgelist('AlTeGrad/Lab4_GraphMining/code/datasets/CA-HepTh.txt', comments='#', delimiter='\t')
 print(f"The graph has {G.number_of_nodes()} nodes.")
 print(f"The graph has {G.number_of_edges()} edges.")
 
@@ -42,6 +42,11 @@ degree_sequence = [G.degree(node) for node in G.nodes()]
 
 ##################
 # your code here #
+print(f"The minimum of degree in the graph is {np.min(degree_sequence)}")
+print(f"The maximum of degree in the graph is {np.max(degree_sequence)}")
+print(f"The median of degree in the graph is {np.median(degree_sequence)}")
+print(f"The mean of degree in the graph is {np.mean(degree_sequence)}")
+
 ##################
 
 
@@ -50,6 +55,16 @@ degree_sequence = [G.degree(node) for node in G.nodes()]
 
 ##################
 # your code here #
+plt.subplot(211)
+hist, bins, _ = plt.hist(degree_sequence, bins=10)
+
+# histogram on log scale. 
+# Use non-equal bin sizes, such that they look equal on log scale.
+logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
+plt.subplot(212)
+plt.hist(degree_sequence, bins=logbins)
+plt.xscale('log')
+plt.show()
 ##################
 
 

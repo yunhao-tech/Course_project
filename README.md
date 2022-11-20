@@ -4,7 +4,8 @@
 | :--:         | :--:                 | :--:    | 
 | Altegrad - MVA | [Lab1](AlTeGrad/Lab1_HAN/ALTEGRAD_2022_Lab1_HAN.ipynb) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](AlTeGrad/Lab2_TransferLearning/Lab2_transfer_learning.ipynb) | Transfer learning on transformer architecture | 
-|                | [Lab3]() | Tokenize | 
+|                | [Lab3](AlTeGrad/Lab3_Tokenize/lab3_tokenize.ipynb) | Using **Fairseq and HuggingFace** transformers to finetune pretrained language models | 
+|                | [Lab4](AlTeGrad/Lab4_GraphMining/code) | Spectral Clustering for graphs; Graph Classification using Graph Kernels | 
 | IPP Practical Machine learning | [Session 1](IPP-Practical%20Machine%20learning/Session%201/ML_TP1.ipynb) | analyse on several unsupervised machine learning methods: **K-means, GMM, PCA, t-SNE** | 
 |                                | [Session 2](IPP-Practical%20Machine%20learning/Session%202/ML_TP2.ipynb) | reguralised regression, variable selection, nonlinear **regression**, on a dataset from the Brain Computer Interface competition | 
 |                                | [Session 3](IPP-Practical%20Machine%20learning/Session%202/ML_TP3.ipynb) | comparison between Bayesian decision, linear and nonlinear **classification**, on MNIST dataset and another one about diabetes | 

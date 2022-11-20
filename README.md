@@ -2,11 +2,18 @@
 
 | Course       | Homeworks & Projects | Content | 
 | :--:         | :--:                 | :--:    | 
+| Altegrad - MVA | [Lab1](AlTeGrad/Lab1_HAN/ALTEGRAD_2022_Lab1_HAN.ipynb) | self-attention and HAN (Hierarchical Attention Network) architecture | 
+|                | [Lab2](AlTeGrad/Lab2_TransferLearning/Lab2_transfer_learning.ipynb) | Transfer learning on transformer architecture | 
+|                | [Lab3]() | Tokenize | 
 | IPP Practical Machine learning | [Session 1](IPP-Practical%20Machine%20learning/Session%201/ML_TP1.ipynb) | analyse on several unsupervised machine learning methods: **K-means, GMM, PCA, t-SNE** | 
+|                                | [Session 2](IPP-Practical%20Machine%20learning/Session%202/ML_TP2.ipynb) | reguralised regression, variable selection, nonlinear **regression**, on a dataset from the Brain Computer Interface competition | 
+|                                | [Session 3](IPP-Practical%20Machine%20learning/Session%202/ML_TP3.ipynb) | comparison between Bayesian decision, linear and nonlinear **classification**, on MNIST dataset and another one about diabetes | 
 | IPP Deep learning | [Lab 1](IPP-Deep%20learning/TP1_MLP_by_hand.ipynb)  | implement MLP from scratch |
 |                   | [Lab 2](IPP-Deep%20learning/TP2_MLP_by_pytorch.ipynb)  | implement MLP using pytorch |
 |                   | [Lab 3](IPP-Deep%20learning/TP3_RNN_ManyToOne.ipynb)  | RNN (Many-to-one) |
 |                   | [Lab 4](IPP-Deep%20learning/TP4_RNN_LanguageModel.ipynb)  | a simple language model |
+|                   | [Lab 5](IPP-Deep%20learning/TP5_CNN_part_1.ipynb)  | build CNN for image recognition, using Pytorch |
+|                   | [Lab 5](IPP-Deep%20learning/TP5_CNN_part_2.ipynb)  | visualisation of CNN: Deep Dream algorithm; Adversarial examples |
 | MAP566 Statistics in Action  | [Homework 1](MAP566-Statistics%20in%20Action%20(R)/Homework%201/homework_1.Rmd)  | Hypothesis testing |
 |                                | [Homework 1](MAP566-Statistics%20in%20Action%20(R)/Homework%202/homework_2.Rmd)  | implement MLP using pytorch |
 |                                | [TP3](MAP566-Statistics%20in%20Action%20(R)/TD3-polynomial-regression.Rmd)         | Polynomial regression model |
@@ -16,6 +23,7 @@
 |                                | [TP7](MAP566-Statistics%20in%20Action%20(R)/TD7-mixture-models.Rmd)         | mixture models |
 |                                | [TP8](MAP566-Statistics%20in%20Action%20(R)/TD8-graph-partionning.Rmd)         | Graph Clustering: Spectral and hierarchical methods |
 |                                | [TP9](MAP566-Statistics%20in%20Action%20(R)/TD9-stochastic-blockmodels.Rmd)         | Graph Clustering: Stochastic Blockmodels |
+| Statistic Bayesian | [DM1](Statistiques%20Bayesians/DM1/Gibbs%20MCMC.ipynb) | Application of MCMC Gibbs sampler to inference parameters based on 'a proteriori' probability | 
 |MAP556 Monte Carlo Methods      | [TP1](MAP556-Monte%20Carlo/MAP556-Monte%20carlo%20TP/MAP556_TP1.ipynb)         | Simulation of random variables + Law of large numbers + Central limit theorem |
 |                                | [TP2](MAP556-Monte%20Carlo/MAP556-Monte%20carlo%20TP/MAP556_TP2.ipynb)          | Serveral methods of variance reduction: **control variates, antithetic sampling, stratification** |
 |                                | [TP3](MAP556-Monte%20Carlo/MAP556-Monte%20carlo%20TP/MAP556_TP3.ipynb)          | Variance reduction through importance sampling |

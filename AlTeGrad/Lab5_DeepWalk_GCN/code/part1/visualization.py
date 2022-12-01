@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 # Loads the web graph
-G = nx.read_weighted_edgelist('../data/web_sample.edgelist', delimiter=' ', create_using=nx.Graph())
+G = nx.read_weighted_edgelist('AlTeGrad/Lab5_DeepWalk_GCN/code/data/web_sample.edgelist', delimiter=' ', create_using=nx.Graph())
 print("Number of nodes:", G.number_of_nodes())
 print("Number of edges:", G.number_of_edges())
 
@@ -37,7 +37,7 @@ def visualize(model, n, dim):
     ##################
     # your code here #
     for idx, node in enumerate(nodes):
-        DeepWalk_embeddings[idx, :] = model.mv[node]
+        DeepWalk_embeddings[idx, :] = model.wv[node]
     ##################
 
 

@@ -28,10 +28,9 @@ class GNN(nn.Module):
         z0 = self.dropout(z0)
         
         z1 = self.relu(torch.mm(adj, self.fc2(z0))) # Relu(A @ X @ W1), 
-        z1 = self.dropout(z1)
         
         x = self.fc3(z1)
         ##################
 
 
-        return F.log_softmax(x, dim=1)
+        return F.log_softmax(x, dim=1), z1

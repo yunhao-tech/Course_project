@@ -19,11 +19,10 @@ def random_walk(G, node, walk_length):
         neignbours = list(G.neighbors(walk[i]))
         ind = randint(0, len(neignbours)-1)
         walk.append(neignbours[ind])
-        
     ##################
-    
-	walk = [str(node) for node in walk]
-	return walk
+
+    walk = [str(node) for node in walk]
+    return walk
 
 
 ############## Task 2
@@ -33,7 +32,7 @@ def generate_walks(G, num_walks, walk_length):
     
     ##################
     # your code here #
-    for i in range(num_walks):
+    for _ in range(num_walks):
         for node in G.nodes():
             walks.append(random_walk(G, node, walk_length))
     permuted_walks = np.random.permutation(walks)

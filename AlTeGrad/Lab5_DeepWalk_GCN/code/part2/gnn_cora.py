@@ -105,7 +105,7 @@ embeddings_test = test()
 
 ##################
 # your code here #
-
+z1_test = embeddings_test.detach().cpu().numpy()
 ##################
 
 
@@ -113,6 +113,8 @@ embeddings_test = test()
 
 ##################
 # your code here #
+my_tsne = TSNE(n_components=2)
+embeddings_test_2d = my_tsne.fit_transform(z1_test)
 ##################
 
 

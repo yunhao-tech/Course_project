@@ -8,8 +8,8 @@ import torch
 from random import randint
 
 def create_dataset():
-#     Gs = list()
-#     y = list()
+    Gs = list()
+    y = list()
 
     ############## Task 5
     

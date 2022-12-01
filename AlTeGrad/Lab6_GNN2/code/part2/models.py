@@ -5,6 +5,7 @@ Deep Learning on Graphs - ALTEGRAD - Nov 2022
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 class GNN(nn.Module):
     def __init__(self, input_dim, hidden_dim_1, hidden_dim_2, hidden_dim_3, n_class, device):
@@ -24,14 +25,12 @@ class GNN(nn.Module):
         # your code here #
         adj = adj + np.eye(adj.shape[0])
         x = self.relu(torch.mm(adj, self.fc1(x_in))) # Relu(A @ X @ W0), 
-        x = self.dropout(x)
         
         x = self.relu(torch.mm(adj, self.fc2(x))) # Relu(A @ X @ W1), 
-        x = self.dropout(x)
         ##################
         
         idx = idx.unsqueeze(1).repeat(1, x.size(1))
-        out = torch.zeros(torch.max(idx)+1, x.size(1)).to(self.device)
+        out = torch.zeros(torch.max(idx)+1, x.size(1), dtype=x.dtype).to(self.device)
         out = out.scatter_add_(0, idx, x) 
         
         ##################

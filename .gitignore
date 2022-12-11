@@ -5,3 +5,8 @@ Python/
 .RData
 .Rhistory
 covtypeNorm.arff/
+
+.vscode/
+.idea/
+
+

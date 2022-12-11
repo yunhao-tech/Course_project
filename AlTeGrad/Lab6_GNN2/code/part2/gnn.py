@@ -10,7 +10,6 @@ from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
 from torch import optim
-from scipy.linalg import block_diag
 
 from models import GNN
 from utils import create_dataset, sparse_mx_to_torch_sparse_tensor
@@ -61,25 +60,24 @@ for epoch in range(epochs):
         # We can set it to 1. In this case, the feature indicates the degree of one node
         n_nodes = sum([G.number_of_nodes() for G in G_train[i:i+batch_size]])
         adj_batch = [nx.adjacency_matrix(G).todense() for G in G_train[i:i+batch_size]]
-        adj_batch = block_diag(*adj_batch)
+
+        adj_batch = sp.block_diag(adj_batch)
         assert n_nodes == adj_batch.shape[0]
 
-        features_batch = np.ones((n_nodes, 1))
-        # idx_batch = np.array([*[i]*G.number_of_nodes() for G in G_train[i:i+batch_size]], dtype=int).flatten()
-        for G in G_train[i:i+batch_size]:
-            idx_batch.extend([i]*G.number_of_nodes())
+        features_batch = torch.ones((n_nodes, 1)).to(device)
+
+        for j, G in enumerate(G_train[i:i+batch_size]):
+            idx_batch.extend([j]*G.number_of_nodes())
         y_batch = y_train[i:i+batch_size]
 
         adj_batch = sparse_mx_to_torch_sparse_tensor(adj_batch).to(device)
         y_batch = torch.LongTensor(y_batch).to(device)
         idx_batch = torch.LongTensor(idx_batch).to(device)
-        features_batch = torch.FloatTensor(features_batch).to(device)
+        # features_batch = torch.FloatTensor(features_batch).to(device)
         ##################
         
         optimizer.zero_grad()
         output = model(features_batch, adj_batch, idx_batch)
-        print(output.shape)
-        print(y_batch.shape)
         loss = loss_function(output, y_batch)
         train_loss += loss.item() * output.size(0)
         count += output.size(0)
@@ -103,7 +101,7 @@ correct = 0
 count = 0
 for i in range(0, N_test, batch_size):
     # adj_batch = list()
-    # idx_batch = list()
+    idx_batch = list()
     # y_batch = list()
 
     ############## Task 7
@@ -112,13 +110,13 @@ for i in range(0, N_test, batch_size):
     # your code here #
     n_nodes = sum([G.number_of_nodes() for G in G_test[i:i+batch_size]])
     adj_batch = [nx.adjacency_matrix(G).todense() for G in G_test[i:i+batch_size]]
-    adj_batch = block_diag(*adj_batch)
+    adj_batch = sp.block_diag(adj_batch)
     assert n_nodes == adj_batch.shape[0]
 
-    features_batch = np.ones((n_nodes, 1))
+    features_batch = torch.ones((n_nodes, 1)).to(device)
     # idx_batch = np.array([[i] * G.number_of_nodes() for G in G_test[i:i+batch_size]], dtype=np.int32).flatten()
-    for G in G_test[i:i+batch_size]:
-        idx_batch.extend([i]*G.number_of_nodes())
+    for j, G in enumerate(G_test[i:i+batch_size]):
+        idx_batch.extend([j]*G.number_of_nodes())
     y_batch = y_test[i:i+batch_size]
 
     adj_batch = sparse_mx_to_torch_sparse_tensor(adj_batch).to(device)

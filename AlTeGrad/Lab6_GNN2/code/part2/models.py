@@ -6,6 +6,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from utils import sparse_mx_to_torch_sparse_tensor
+from scipy.sparse import identity
 
 class GNN(nn.Module):
     def __init__(self, input_dim, hidden_dim_1, hidden_dim_2, hidden_dim_3, n_class, device):
@@ -23,7 +25,7 @@ class GNN(nn.Module):
     
         ##################
         # your code here #
-        adj = adj + np.eye(adj.shape[0])
+        adj = adj + sparse_mx_to_torch_sparse_tensor(identity(adj.shape[0]))
         x = self.relu(torch.mm(adj, self.fc1(x_in))) # Relu(A @ X @ W0), 
         
         x = self.relu(torch.mm(adj, self.fc2(x))) # Relu(A @ X @ W1), 

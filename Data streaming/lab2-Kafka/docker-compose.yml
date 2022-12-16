@@ -1,0 +1,20 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    volumes:
+      - ./kafka_data/data:/data
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      #### Replace by your IP addresse. Check IP adresse: run 'ipconfig' in cmd #### 
+      KAFKA_ADVERTISED_HOST_NAME: 172.25.176.1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - ./kafka_data/kafka-logs:/kafka
+      - /var/run/docker.sock:/var/run/docker.sock
+  

@@ -19,6 +19,10 @@ class DeepSets(nn.Module):
     
         ##################
         # your code here #
+        x = self.embedding(x)
+        x = self.tanh(self.fc1(x))
+        x = torch.sum(x, axis=1)
+        x = self.fc2(x)
         ##################
         
         return x.squeeze()
@@ -38,6 +42,9 @@ class LSTM(nn.Module):
     
         ##################
         # your code here #
+        x = self.embedding(x)
+        _, (x,_) = self.lstm(x)
+        x = self.fc(x)
         ##################
         
         return x.squeeze()

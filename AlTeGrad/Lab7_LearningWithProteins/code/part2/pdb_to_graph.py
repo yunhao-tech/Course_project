@@ -38,7 +38,7 @@ PDB_CODE = "Q5VSL9"
 ##################
 # your code here #
 protein_path = download_alphafold_structure(PDB_CODE, aligned_score=False)
-G = construct_graph(protein_path, config=config)
+G = construct_graph(config=config, pdb_path=protein_path)
 ##################
 
 # Print number of nodes and number of edges
@@ -54,19 +54,19 @@ seq_degree = [G.degree(node) for node in G.nodes()]
 print(f"Max degree: {np.max(seq_degree)}")
 print(f"Min degree: {np.min(seq_degree)}")
 print(f"Mean degree: {np.mean(seq_degree)}")
+print(f"Median degree: {np.median(seq_degree)}")
+
 
 p = plot_degree_by_residue_type(G)
-p.write_image('degree_by_residue_type')
+p.write_image('degree_by_residue_type.png')
 
 p2 = plot_edge_type_distribution(G)
-p2.write_image('residue_composition')
-
-
-p4 = plot_residue_composition(G)
-p4.write_image('residue_composition')
+p2.write_image('edge_type_composition.png')
 
 p3 = plot_protein_structure_graph(G)
-p3.write_image('protein_structure')
+p3.write_image('protein_structure.png')
 
+p4 = plot_residue_composition(G)
+p4.write_image('residue_composition.png')
 
 ##################

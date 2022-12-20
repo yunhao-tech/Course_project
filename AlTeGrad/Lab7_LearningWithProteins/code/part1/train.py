@@ -46,6 +46,11 @@ for epoch in range(epochs):
     
         ##################
         # your code here #
+        x_batch = X_train[idx[i:min(i+batch_size, n_train)], :]
+        y_batch = y_train[idx[i:min(i+batch_size, n_train)]]
+        
+        x_batch = torch.LongTensor(x_batch).to(device)
+        y_batch = torch.FloatTensor(y_batch).to(device)
         ##################
         
         optimizer.zero_grad()
@@ -88,7 +93,7 @@ for epoch in range(epochs):
         
         ##################
         # your code here #
-        x_batch = X_train[idx[i:min(i+batch_size, n_train), :]]
+        x_batch = X_train[idx[i:min(i+batch_size, n_train)], :]
         y_batch = y_train[idx[i:min(i+batch_size, n_train)]]
         
         x_batch = torch.LongTensor(x_batch).to(device)

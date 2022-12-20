@@ -27,6 +27,10 @@ class GNN(nn.Module):
     
         ##################
         # your code here #
+        x = self.relu(torch.mm(adj, self.fc1(x_in))) # Relu(A @ X @ W0), 
+        x = self.dropout(x)
+
+        x = torch.mm(adj, self.fc2(x)) # A @ X @ W1, 
         ##################
         
         # sum aggregator
@@ -36,6 +40,11 @@ class GNN(nn.Module):
         
         ##################
         # your code here #
+        out = self.bn(out)
+
+        out = self.relu(self.fc3(out))
+        out = self.dropout(out)
+        out = self.fc4(out)
         ##################
 
         return F.log_softmax(out, dim=1)

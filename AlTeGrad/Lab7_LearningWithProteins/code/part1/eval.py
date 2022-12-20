@@ -53,8 +53,7 @@ for i in range(len(cards)):
         x_batch = X_test[i][j:min(j+batch_size, n_samples_per_card), :]
         y_batch = y_test[i][j:min(j+batch_size, n_samples_per_card)]
 
-
-        y_batch = torch.LongTensor(x_batch).to(device)
+        x_batch = torch.LongTensor(x_batch).to(device)
         y_batch = torch.FloatTensor(y_batch).to(device)
 
         output_deepsets = deepsets(x_batch)
@@ -92,5 +91,5 @@ plt.plot(cards, results['lstm']['acc'], '-o', label="Lstm")
 plt.xlabel('cardinality')
 plt.ylabel("accuracy")
 plt.legend()
-
+plt.show()
 ##################

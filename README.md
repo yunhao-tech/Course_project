@@ -9,11 +9,14 @@
 |                | [Lab5](AlTeGrad/Lab5_DeepWalk_GCN) | DeepWalk algorithm & node embedding & Graph neural network (GNN) | 
 |                | [Lab6](AlTeGrad/Lab6_GNN2) | Graph attention network (GAT) &  Graph Classification with deep learning | 
 |                | [Lab7](AlTeGrad/Lab7_LearningWithProteins) | DeepSets model & protein classification with GNN | 
+|                | [Kaggle challenge](https://github.com/yunhao-tech/altegrad_challenge_2023) | Kaggle challenge: use sequential and structural information to classify protein into 18 classes.
 | Computer Vision (Telecom) | [Lab1](Computer%20vision/TP1) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](Computer%20vision/TP2) | Feature detection (Harris corner detection) & Motion estimation (block matching) & Segmentation (algorithm of Otsu + region-growing based algorithm) | 
 | Data streaming (IPP) | [Lab1](Data%20streaming/lab1) | Discovery of River: like sklearn, but it focus on online machine learning | 
 |                | [Lab2](Data%20streaming/lab2-Kafka) | Using Docker and Kafka to analyse streaming tweets | 
+|                | [Final project: Continual GNN](https://github.com/yunhao-tech/ContinualGNN) | Refactor the original codes in a paper studying streaming GNN via continual learning  |
 | Statistic Bayesian (ENSAE) | [DM1](Statistiques%20Bayesians/DM1/Gibbs%20MCMC.ipynb) | Application of MCMC Gibbs sampler to inference parameters based on 'a proteriori' probability | 
+|                            | [Final project](https://github.com/yunhao-tech/Bayesian-Inference-project) | Using Gibbs sampling and DMC-IS(direct monte carlo with importance sampling) to reproduce some results in [this paper](https://projecteuclid.org/journals/bayesian-analysis/volume-5/issue-1/Hierarchical-Bayesian-analysis-of-the-seemingly-unrelated-regression-and-simultaneousequations/10.1214/10-BA503.full)  |
 | Practical Machine learning (IPP) | [Session 1](IPP-Practical%20Machine%20learning/Session%201/ML_TP1.ipynb) | analyse on several unsupervised machine learning methods: **K-means, GMM, PCA, t-SNE** | 
 |                                | [Session 2](IPP-Practical%20Machine%20learning/Session%202/ML_TP2.ipynb) | reguralised regression, variable selection, nonlinear **regression**, on a dataset from the Brain Computer Interface competition | 
 |                                | [Session 3](IPP-Practical%20Machine%20learning/Session%202/ML_TP3.ipynb) | comparison between Bayesian decision, linear and nonlinear **classification**, on MNIST dataset and another one about diabetes | 

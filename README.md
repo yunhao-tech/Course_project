@@ -3,6 +3,7 @@
 | Course       | Homeworks & Projects | Content | 
 | :--:         | :--:                 | :--:    | 
 | Advanced Machine learning (ENSAE) | [Final project](Advanced%20Machine%20learning) | Understand and Fine-tune the ViT-Base/32 CLIP model | 
+| Deep learning II (IPP) | [Final project: RBM&DBN](https://github.com/yunhao-tech/RBM_DBN/tree/master) | Implement and train RBM (Restricted Boltzmann machine) and DBN (Deep belief network) from scratch | 
 | Altegrad (MVA) | [Lab1](AlTeGrad/Lab1_HAN) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](AlTeGrad/Lab2_TransferLearning) | Transfer learning on transformer architecture | 
 |                | [Lab3](AlTeGrad/Lab3_Tokenize) | Using **Fairseq and HuggingFace** transformers to finetune pretrained language models | 

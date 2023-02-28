@@ -3,6 +3,8 @@
 | Course       | Homeworks & Projects | Content | 
 | :--:         | :--:                 | :--:    | 
 | Advanced Machine learning (ENSAE) | [Final project](Advanced%20Machine%20learning) | Understand and Fine-tune the ViT-Base/32 CLIP model | 
+| Data camp (IPP) | [Data challenge](https://github.com/yunhao-tech/solar_wind) | Solar wind classification based on data measured by in-situ spacecraft | 
+|  | [Design of Data challenge](https://github.com/yunhao-tech/precipitation-forecast) | Precipitation forecast: Based on 18 consecutive satellite radar frames, to predict the next 18 frames | 
 | Deep learning II (IPP) | [Final project: RBM&DBN](https://github.com/yunhao-tech/RBM_DBN/tree/master) | Implement and train RBM (Restricted Boltzmann machine) and DBN (Deep belief network) from scratch | 
 | Altegrad (MVA) | [Lab1](AlTeGrad/Lab1_HAN) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](AlTeGrad/Lab2_TransferLearning) | Transfer learning on transformer architecture | 

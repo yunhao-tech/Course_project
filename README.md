@@ -15,6 +15,7 @@
 |                | [Lab6](AlTeGrad/Lab6_GNN2) | Graph attention network (GAT) &  Graph Classification with deep learning | 
 |                | [Lab7](AlTeGrad/Lab7_LearningWithProteins) | DeepSets model & protein classification with GNN | 
 |                | [Kaggle challenge](https://github.com/yunhao-tech/altegrad_challenge_2023) | Kaggle challenge: use sequential and structural information to classify protein into 18 classes.
+| Causal Inference (IPP) | [Lectures & Labs]() | Notebooks in lectures and labs. See the summary in Readme | 
 | Sequential Monte-Carlo (ENSAE) | [Final project](https://github.com/yunhao-tech/Sequantial-Monte-Carlo-project) | Employ the SMC methods in Dropout layer of neural network in adaptation stage, in order to replace the fine-tuning | 
 | Computer Vision (Telecom) | [Lab1](Computer%20vision/TP1) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](Computer%20vision/TP2) | Feature detection (Harris corner detection) & Motion estimation (block matching) & Segmentation (algorithm of Otsu + region-growing based algorithm) | 

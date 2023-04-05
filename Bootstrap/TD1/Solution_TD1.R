@@ -97,7 +97,7 @@ toc()
 
 stopCluster(cl)
 
-res <- matrix(rep(NA,4), nrow=2, ncol=2)
+res <- matrix(rep(NA, 4), nrow=2, ncol=2)
 res[,1] <- rowMeans(Bias_simul - 1) ## This computes the bias of each estimator and takes the mean
 res[,2] <- c(mean((Bias_simul[1,]-1)^2), mean((Bias_simul[2,]-1)^2)) #" This computes the MSE of each estimator
 rownames(res) <- c("No Bias correction", "Jackknife bias correction" )

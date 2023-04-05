@@ -17,6 +17,9 @@
 |                | [Kaggle challenge](https://github.com/yunhao-tech/altegrad_challenge_2023) | Kaggle challenge: use sequential and structural information to classify protein into 18 classes.
 | Causal Inference (IPP) | [Lectures & Labs](Causal%20Inference) | Notebooks in lectures and labs. See the summary in Readme | 
 |  | [Final project](https://github.com/yunhao-tech/Counterfactual-Fairness) | Reproduction of paper: [Counterfactual Fairness](https://arxiv.org/abs/1703.06856) to study in machine learning **the fairness using causal inference** | 
+| Bootstrap (ENSAE) | [TD1] | Application of **Jackknife** to estimate the asymptotic variance (Ex.1) and bias (Ex.2) of estimators | 
+|  | [TD2] | Application of **Bootstrap** to estimate the bias (Ex.2) and variance (Ex.1, possibly to use Boostrap of Boostrap) of an estimator/statistic | 
+|  | [TD3] | The exam of last year |
 | Sequential Monte-Carlo (ENSAE) | [Final project](https://github.com/yunhao-tech/Sequantial-Monte-Carlo-project) | Employ the SMC methods in Dropout layer of neural network in adaptation stage, in order to replace the fine-tuning | 
 | Computer Vision (Telecom) | [Lab1](Computer%20vision/TP1) | self-attention and HAN (Hierarchical Attention Network) architecture | 
 |                | [Lab2](Computer%20vision/TP2) | Feature detection (Harris corner detection) & Motion estimation (block matching) & Segmentation (algorithm of Otsu + region-growing based algorithm) | 

@@ -6,7 +6,7 @@ The questions of causal inference arise in many areas (socio-economics, politics
 
 The aim of this course is to present  the available methods to perform causal inference from observational data.
 
-Below is a summarization of pratical Python codes both during lectures and labs. You can also find the my `Course summary`. The `Reference book` is a very good introduction to causal inference, which may interest you.
+Below is a summarization of pratical Python codes both during lectures and labs. You can also find the my `Course summary`. The `Reference book` is a very good introduction to causal inference, which may interest you. The [tutorial online](https://matheusfacure.github.io/python-causality-handbook/landing-page.html) is also useful.
 
 ---
 
